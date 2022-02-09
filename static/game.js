@@ -606,9 +606,9 @@ function checkFlag() {
         //}
         
         var plrect = {top:mee.y-0.5,bottom:mee.y+0.5,right:mee.x+0.5,left:mee.x-0.5};
-		if (Math.abs(mee.xv) > 0.001)
+		if (Math.abs(mee.xv) > 0.1*dt)
             mee.x += mee.xv*altdt;
-        if (Math.abs(mee.yv) > 0.001)
+        if (Math.abs(mee.yv) > 0.1*dt)
             mee.y += mee.yv*altdt;
         
         
