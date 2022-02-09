@@ -587,9 +587,10 @@ function checkFlag() {
         if (d > 0.1){
             x = x/d;
             y = y/d;
-            mee.x+=x*dt;
-            mee.y+=y*dt;
+            
         }
+        mee.xv=x*dt*3.0;
+        mee.yv=y*dt*3.0;
         
 
     }
