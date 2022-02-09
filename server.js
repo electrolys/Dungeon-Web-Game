@@ -32,12 +32,8 @@ io.on('connection', function(socket) {
   socket.on('n', function() {
     players[socket.id] = {
       x: 0.0,
-      y: 0.0,
-      pjs:[]
+      y: 0.0
     };
-  });
-  socket.on('d', function(id) {
-    io.sockets.emit('score',id);
   });
   socket.on('chat', function(message) {
     io.sockets.emit('c',message);
