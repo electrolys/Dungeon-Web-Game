@@ -115,7 +115,7 @@ else{
       if (!event.repeat)
 		keysdown.use = true;
       break;
-    case 32// X
+    case 32:// X
       if (!event.repeat)
 		keysdown.use = true;
       break;
