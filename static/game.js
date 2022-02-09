@@ -195,18 +195,7 @@ socket.on('s', function(players) {
 	for (var id in cplayers) {
         if (id != socket.id){
 			var player = cplayers[id] || {};
-			for (var i = 0; i < player.pjs.length; i++) {
-				if (intersectRect({top:mee.y-0.5,bottom:mee.y+0.5,right:mee.x+0.5,left:mee.x-0.5},
-					{top:player.pjs[i].y-player.pjs[i].height,bottom:player.pjs[i].y+player.pjs[i].height,right:player.pjs[i].x+player.pjs[i].width,left:player.pjs[i].x-player.pjs[i].width})){
-					if (hit <= 0.0){
-						mee.hp-=player.pjs[i].atk;
-						hit = 0.3;
-						if (mee.hp <= 0.0){
-							socket.emit('d',id);
-						}
-					}
-				}
-			}
+			
 		}
 	}
 });
