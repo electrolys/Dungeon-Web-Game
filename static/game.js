@@ -579,16 +579,16 @@ function checkFlag() {
         if (keysdown.left)
             x-=1.0;
         if (keysdown.up)
-            y+=1.0;
-        if (keysdown.down)
             y-=1.0;
+        if (keysdown.down)
+            y+=1.0;
 
         var d = Math.sqrt(x*x+y*y);
         if (d > 0.1){
             x = x/d;
             y = y/d;
-            mee.x+=x;
-            mee.y+=y;
+            mee.x+=x*dt;
+            mee.y+=y*dt;
         }
         
 
