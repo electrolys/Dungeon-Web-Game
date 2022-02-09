@@ -577,9 +577,9 @@ function checkFlag() {
             x = x/d;
             y = y/d;
             
+            mee.x+=x*dt*3.0;
+            mee.y+=y*dt*3.0;
         }
-        mee.xv=x*dt*3.0;
-        mee.yv=y*dt*3.0;
         
 
     }
