@@ -97,28 +97,29 @@ else{
 		if (!event.repeat)
 		keysdown.left = true;
 		break;
-    case 90: // Z
-      if (!event.repeat)
-		keysdown.up = true;
-      break;
-	case 32: // Z
-      if (!event.repeat)
-		keysdown.up = true;
-      break;
 	case 38:
-            if (!event.repeat)
-			keysdown.up = true;
-            break;
+        if (!event.repeat)
+		keysdown.up = true;
+        break;
     case 39: // ->
 
 		if (!event.repeat)
 		keysdown.right = true;
       break;
-    case 88: // X
+    case 40: // ->
+
+		if (!event.repeat)
+		keysdown.down = true;
+      break;
+    case 90: // X
       if (!event.repeat)
 		keysdown.use = true;
       break;
-	case 67:
+    case 32// X
+      if (!event.repeat)
+		keysdown.use = true;
+      break;
+	case 88:
 		if (!event.repeat)
 		keysdown.switch = true;
 		break;
@@ -130,15 +131,7 @@ else{
             if (!event.repeat)
 			keysdown.left = false;
             break;
-      case 90:
-            if (!event.repeat)
-			keysdown.up = false;
-            break;
-	case 32:
-            if (!event.repeat)
-			keysdown.up = false;
-            break;
-		case 38:
+	  case 38:
             if (!event.repeat)
 			keysdown.up = false;
             break;
@@ -146,11 +139,19 @@ else{
             if (!event.repeat)
 			keysdown.right = false;
             break;
-      case 88:
+      case 40:
+            if (!event.repeat)
+			keysdown.down = false;
+            break;
+      case 90:
             if (!event.repeat)
 			keysdown.use = false;
             break;
-	  case 67:
+      case 32:
+            if (!event.repeat)
+			keysdown.use = false;
+            break;
+	  case 88:
 			if (!event.repeat)
 			keysdown.switch = false;
 			break;
@@ -569,6 +570,29 @@ function checkFlag() {
 		}
 	}
     
+
+    {
+        var x = 0.0;
+        var y = 0.0;
+        if (keysdown.right)
+            x+=1.0;
+        if (keysdown.left)
+            x-=1.0;
+        if (keysdown.up)
+            y+=1.0;
+        if (keysdown.down)
+            y-=1.0;
+
+        var d = Math.sqrt(x*x+y*y);
+        if (d > 0.1){
+            x = x/d;
+            y = y/d;
+            mee.x+=x;
+            mee.y+=y;
+        }
+        
+
+    }
 
 	keysdown.pup = keysdown.up;
 	keysdown.pleft = keysdown.left;
