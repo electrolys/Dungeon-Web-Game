@@ -1,646 +1,502 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var socket = io();
-
-
-// Load text with Ajax synchronously: takes path to file and optional MIME type
-function loadTextFileAjaxSync(filePath, mimeType)
-{
-  var xmlhttp=new XMLHttpRequest();
-  xmlhttp.open("GET",filePath,false);
-  if (mimeType != null) {
-    if (xmlhttp.overrideMimeType) {
-      xmlhttp.overrideMimeType(mimeType);
+function loadtxt(filePath, mimeType) {
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("GET", filePath, false);
+    if (mimeType != null) {
+        if (xmlhttp.overrideMimeType) {
+            xmlhttp.overrideMimeType(mimeType);
+        }
     }
-  }
-  xmlhttp.send();
-  if (xmlhttp.status==200)
-  {
-    return xmlhttp.responseText;
-  }
-  else {
-  console.log("exec");
-    return null;
-  }
+    xmlhttp.send();
+    if (xmlhttp.status == 200) {
+        return xmlhttp.responseText;
+    }
+    else {
+        console.log("exec");
+        return null;
+    }
 }
-
-
-
-function loadJSON(filePath) {
-  // Load json file;
-  var json = loadTextFileAjaxSync(filePath, "application/json");
-  // Parse json
-  return JSON.parse(json);
-}
-
-
-var keysdown = {
-  up: false,
-  down: false,
-  left: false,
-  right: false,
-  switch: false,
-  pup: false,
-  pdown: false,
-  pleft: false,
-  pright: false,
-  pswitch: false
-}
-var mee = {
-    x  : 0.0,
-    y  : 0.0,
-    xv : 0.0,
-    yv : 0.0,
-	hp : 100.0,
-    mxhp : 100.0,
-	dir : false,
-	score : 0,
-	name : "loading...",
-	anim : 0,
-	char : 0
-}
-
-function intersectRect(r1, r2) {
-  return !(r2.left > r1.right ||
-           r2.right < r1.left ||
-           r2.top > r1.bottom ||
-           r2.bottom < r1.top);
-}
-
-
-
-
-//function collidepl(pl,pl2){
-//    collide(pl,{top:pl2.y-0.5,bottom:pl2.y+0.5,right:pl2.x+0.5,left:pl2.x-0.5})
-//}
-
-var isMobile = !!(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
-var ongoingTouches = [];
+var vec = /** @class */ (function () {
+    function vec(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    vec.prototype.add = function (t) {
+        return new vec(this.x + t.x, this.y + t.y);
+    };
+    vec.prototype.sub = function (t) {
+        return new vec(this.x - t.x, this.y - t.y);
+    };
+    vec.prototype.mul = function (t) {
+        return new vec(this.x * t.x, this.y * t.y);
+    };
+    vec.prototype.div = function (t) {
+        return new vec(this.x / t.x, this.y / t.y);
+    };
+    vec.prototype.smul = function (t) {
+        return new vec(this.x * t, this.y * t);
+    };
+    vec.prototype.sdiv = function (t) {
+        return new vec(this.x / t, this.y / t);
+    };
+    vec.prototype.lensq = function () {
+        return this.x * this.x + this.y * this.y;
+    };
+    vec.prototype.len = function () {
+        return Math.sqrt(this.lensq());
+    };
+    vec.prototype.norm = function () {
+        return this.sdiv(this.len());
+    };
+    return vec;
+}());
+var sarray = /** @class */ (function (_super) {
+    __extends(sarray, _super);
+    function sarray(length) {
+        return _super.call(this, length) || this;
+    }
+    return sarray;
+}(Array));
+var array2d = /** @class */ (function () {
+    function array2d(sz) {
+        this.sz = sz;
+        this.data = new sarray(sz * sz);
+    }
+    array2d.prototype.g = function (i, j) { return this.data[i + j * this.sz]; };
+    array2d.prototype.s = function (i, j, v) { this.data[i + j * this.sz] = v; };
+    return array2d;
+}());
+var vtx = /** @class */ (function () {
+    function vtx() {
+    }
+    return vtx;
+}());
 var canvas = document.getElementById('canvas');
-
-
-
-
-if (isMobile){
-	function handleStart(e) {ongoingTouches = e.touches;}
-	function handleEnd(e)   {ongoingTouches = e.touches;}
-	function handleCancel(e){ongoingTouches = e.touches;}
-	function handleMove(e)  {ongoingTouches = e.touches;}
-	canvas.addEventListener("touchstart", handleStart, false);
-	canvas.addEventListener("touchend", handleEnd, false);
-	canvas.addEventListener("touchcancel", handleCancel, false);
-	canvas.addEventListener("touchmove", handleMove, false);
+var gl = canvas.getContext('experimental-webgl', { preserveDrawingBuffer: false });
+function loadTexture(url) {
+    var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    // Because images have to be downloaded over the internet
+    // they might take a moment until they are ready.
+    // Until then put a single pixel in the texture so we can
+    // use it immediately. When the image has finished downloading
+    // we'll update the texture with the contents of the image.
+    var level = 0;
+    var internalFormat = gl.RGBA;
+    var width = 1;
+    var height = 1;
+    var border = 0;
+    var srcFormat = gl.RGBA;
+    var srcType = gl.UNSIGNED_BYTE;
+    var pixel = new Uint8Array([0, 0, 255, 255]); // opaque blue
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, srcFormat, srcType, pixel);
+    var image = new Image();
+    image.onload = function () {
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    };
+    image.src = url;
+    return texture;
 }
-else{
-	document.addEventListener('keydown', function(event) {
-	switch (event.keyCode) {
-    case 37: // <-
-
-		if (!event.repeat)
-		keysdown.left = true;
-		break;
-	case 38:
-        if (!event.repeat)
-		keysdown.up = true;
-        break;
-    case 39: // ->
-
-		if (!event.repeat)
-		keysdown.right = true;
-      break;
-    case 40: // ->
-
-		if (!event.repeat)
-		keysdown.down = true;
-      break;
-    case 90: // X
-      if (!event.repeat)
-		keysdown.use = true;
-      break;
-    case 32:// X
-      if (!event.repeat)
-		keysdown.use = true;
-      break;
-	case 88:
-		if (!event.repeat)
-		keysdown.switch = true;
-		break;
-	}
-	});
-	document.addEventListener('keyup', function(event) {
-	  switch (event.keyCode) {
-      case 37:
-            if (!event.repeat)
-			keysdown.left = false;
-            break;
-	  case 38:
-            if (!event.repeat)
-			keysdown.up = false;
-            break;
-      case 39:
-            if (!event.repeat)
-			keysdown.right = false;
-            break;
-      case 40:
-            if (!event.repeat)
-			keysdown.down = false;
-            break;
-      case 90:
-            if (!event.repeat)
-			keysdown.use = false;
-            break;
-      case 32:
-            if (!event.repeat)
-			keysdown.use = false;
-            break;
-	  case 88:
-			if (!event.repeat)
-			keysdown.switch = false;
-			break;
-	  }
-	});
-}
-
-socket.emit('n');
-
-
-socket.on('score', function(id) {
-	if (id == socket.id)
-		mee.score+=1;
-}
-)
-socket.on('kick', function(id) {
-	if (id == mee.name){
-		window.close();
-	}
-}
-)
-
-
-
-setInterval(function() {
-    socket.emit('u', mee);
-}, 1000 / 30);
-
-
-
-
-
-
-canvas.width = 800;
-canvas.height = 600;
-var context = canvas.getContext('2d');
-
-var cplayers;
-socket.on('s', function(players) {
-    cplayers = players;
-	for (var id in cplayers) {
-        if (id != socket.id){
-			var player = cplayers[id] || {};
-			
-		}
-	}
-});
-
-var plsize =0;
-
-var characters = [
-	new Image(),
-	new Image(),
-	new Image(),
-	new Image(),
-	new Image(),
-	new Image(),
-	new Image(),
-	new Image(),
-	new Image(),
-	new Image(),
-	new Image(),
-	new Image(),
-    new Image(),
-	new Image(),
-	new Image(),
-    new Image(),
-	new Image(),
-	new Image(),
-	new Image()
-];
-
-
-characters[0].src = 'static/img/man1.png';
-characters[1].src = 'static/img/man2.png';
-characters[2].src = 'static/img/man3.png';
-
-characters[3].src = 'static/img/girl1.png'
-characters[4].src = 'static/img/girl2.png'
-
-characters[5].src = 'static/img/bike.png';
-characters[6].src = 'static/img/bike2.png';
-
-characters[7].src = 'static/img/bot.png';
-characters[8].src = 'static/img/pinkbot.png';
-
-characters[9].src = 'static/img/dog.png'
-characters[10].src = 'static/img/technopig.png'
-characters[11].src = 'static/img/dreamy.png'
-characters[12].src = 'static/img/annoyingdog.png'
-
-characters[13].src = 'static/img/duane.png'
-characters[14].src = 'static/img/leenk.png'
-characters[15].src = 'static/img/markio.png'
-characters[16].src = 'static/img/looogi.png'
-characters[17].src = 'static/img/MRLoogi.png'
-characters[18].src = 'static/img/kirbo.png'
-
-var spsize;
-spsize = 64;
-
-var cool = 0.0;
-
-var chat = ["","","","",""];
-
-socket.on('c', function(message) {
-   for (var i = 4 ; i > 0 ; i --)
-   {
-   		chat[i]=chat[i-1]
-   } 
-   chat[0]=message;
-});
-
-var gcol = function(rect){
-	if (rect)
-		return "rgb("+rect["colr"].toString()+","+rect["colg"].toString()+","+rect["colb"].toString()+")";
-	else 
-		return "blue";
-}
-
-setInterval(function() {
-	canvas.width  = window.innerWidth;
-	canvas.height = window.innerHeight;
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    if (isMobile)
-    plsize = canvas.height/16;
-    else
-    plsize = canvas.height/24;
-    var trectangle = {top:(-canvas.height/2/plsize+mee.y)-0.3,bottom:(canvas.height/2/plsize+mee.y)+0.3,left:(-canvas.width/2/plsize+mee.x)-0.3,right:(canvas.width/2/plsize+mee.x)+0.3};
-
-	
-
-
-
-	context.drawImage(characters[mee.char],0,mee.anim*spsize,spsize,spsize,(canvas.width/2)-plsize/2,(canvas.height/2)-plsize/2,plsize,plsize);
-
-	var tpls = 0;
-
-	for (var id in cplayers) {
-        tpls++;
-		if (id != socket.id){
-			var player = cplayers[id] || {};
-			
-            //context.fillStyle = 'red';
-            //context.beginPath();
-            //context.rect(((player.x-mee.x)*plsize+canvas.width/2)-plsize/2,((player.y-mee.y)*plsize+canvas.height/2)-plsize/2,plsize,plsize);
-            //context.fill();
-			context.fillStyle = 'red';
-			context.font = "16px Verdana";
-			context.fillText(Math.floor(player.hp)+"/"+Math.floor(player.mxhp), ((player.x-mee.x)*plsize+canvas.width/2)-plsize/2,((player.y-mee.y)*plsize+canvas.height/2)-plsize/2);
-			context.fillStyle = 'rgb(255, 153, 0)';
-			context.font = "16px Verdana";
-			context.fillText(player.score, ((player.x-mee.x)*plsize+canvas.width/2)-plsize/2,(((player.y-mee.y)*plsize-15)+canvas.height/2)-plsize/2);
-			context.fillStyle = 'black';
-			context.font = "16px Verdana";
-			context.fillText(player.name, ((player.x-mee.x)*plsize+canvas.width/2)-plsize/2,(((player.y-mee.y)*plsize-30)+canvas.height/2)-plsize/2);
-			if (intersectRect(trectangle,{top:player.y-0.5,bottom:player.y+0.5,right:player.x+0.5,left:player.x-0.5})){
-				context.drawImage(characters[player.char],0,player.anim*spsize,spsize,spsize,((player.x-mee.x)*plsize+canvas.width/2)-plsize/2,((player.y-mee.y)*plsize+canvas.height/2)-plsize/2,plsize,plsize);
-			}else
-				{
-					var num = Math.min(Math.max(0.1*Math.sqrt((player.x-mee.x)*(player.x-mee.x)+(player.y-mee.y)*(player.y-mee.y)),1),8);
-					context.fillStyle = 'white';
-					context.beginPath();
-					context.arc(Math.max(Math.min(((player.x-mee.x)*plsize+canvas.width/2),canvas.width),0),Math.max(Math.min(((player.y-mee.y)*plsize+canvas.height/2),canvas.height),0), plsize/(0.4*num), 0, 2 * Math.PI);
-					context.fill();
-					context.fillStyle = 'red';
-					context.beginPath();
-					context.arc(Math.max(Math.min(((player.x-mee.x)*plsize+canvas.width/2),canvas.width),0),Math.max(Math.min(((player.y-mee.y)*plsize+canvas.height/2),canvas.height),0), plsize/(0.7*num), 0, 2 * Math.PI);
-					context.fill();
-
-				}
-        }else {
-        	var player = cplayers[id] || {};
-        	
-        }
+// var context:any = canvas.getContext('2d');
+var player = /** @class */ (function () {
+    function player() {
+        this.pos = new vec(23, 12);
     }
-
-
-//	var count = 0;
-//	for (var i = 0 ; i < itemtypes.length ; i++)
-//		if (itemtypes[i].stk)
-//			count+=1;
-//	context.fillStyle = 'rgba(125, 125, 125,0.5)';
-//    context.beginPath();
-//    context.rect( 4,0,16*16,count*16+8);
-//    context.fill();
-
-    context.font = "16px Verdana";
-	context.fillStyle = 'rgba(125, 125, 125,0.5)';
-    context.beginPath();
-    context.rect( canvas.width-Math.max(context.measureText("<"+mee.name+">        ").width,context.measureText("<"+"            "+">        ").width),0,Math.max(context.measureText("<"+mee.name+">       ").width,context.measureText("<"+"            "+">       ").width ) , 4*16+8);
-    context.fill();
-
-	//context.fillStyle = 'blue';
-    //context.beginPath();
-    //context.rect((canvas.width/2)-plsize/2,(canvas.height/2)-plsize/2,plsize,plsize);
-    //context.fill();
-
-
-	var temppl = [];
-	for (var id in cplayers)
-		temppl.push(cplayers[id]);
-	temppl.sort(function(a,b){return b.score-a.score;})
-
-	context.fillStyle = 'blue';
-	context.font = "16px Verdana";
-	context.fillText("CD:"+Math.max(Math.floor(cool*10),0), (canvas.width)-context.measureText("CD:"+Math.max(Math.floor(cool*10),0)+"  ").width,64);
-	context.fillStyle = 'red';
-	context.font = "16px Verdana";
-	context.fillText("HP:"+Math.floor(mee.hp)+"/"+Math.floor(mee.mxhp), (canvas.width)-context.measureText("HP:"+Math.floor(mee.hp)+"/"+Math.floor(mee.mxhp)+"  ").width,48);
-	context.fillStyle = 'rgba(255, 153, 0,255)';
-	context.font = "16px Verdana";
-	context.fillText("score:"+mee.score, (canvas.width)-context.measureText("score:"+mee.score+"  ").width,32);
-	context.fillStyle = 'black';
-	context.font = "16px Verdana";
-	context.fillText("<"+mee.name+">", (canvas.width)-context.measureText("<"+mee.name+">  ").width,16);
-	context.fillStyle = 'rgba(0,0,0,0.6)';
-	context.fillText("online:"+tpls, 8,canvas.height-16);
-	context.fillText(chat[0], 8,canvas.height-68);
-	context.fillText(chat[1], 8,canvas.height-84);
-	context.fillText(chat[2], 8,canvas.height-100);
-	context.fillText(chat[3], 8,canvas.height-116);
-	context.fillText(chat[4], 8,canvas.height-132);
-	context.fillStyle = 'rgba(0,0,0,0.6)';
-	if (temppl[0])
-	context.fillText("1st [ "+temppl[0].name+":"+temppl[0].score+" ]", (canvas.width)-context.measureText("1st [ "+temppl[0].name+":"+temppl[0].score+" ]  ").width,canvas.height-48);
-	if (temppl[1])
-	context.fillText("2nd [ "+temppl[1].name+":"+temppl[1].score+" ]", (canvas.width)-context.measureText("2nd [ "+temppl[1].name+":"+temppl[1].score+" ]  ").width,canvas.height-32);
-	if (temppl[2])
-	context.fillText("3rd [ "+temppl[2].name+":"+temppl[2].score+" ]", (canvas.width)-context.measureText("3rd [ "+temppl[2].name+":"+temppl[2].score+" ]  ").width,canvas.height-16);
-
-//	context.fillStyle = 'black';
-//	var index = 0;
-//	for (var i = 0 ; i < itemtypes.length ; i++){
-//        var lvl = itemlvls(itemtypes[i]);
-//        var prefix = "";    
-//        if (lvl != 1){
-//            prefix = lvlnames[(4-itemtypes[i].upamnt)+lvl-1];
-//        }
-//            
-//	
-//        if (i == sitm){
-//			if (itemtypes[i].stk){
-//				context.fillText(">"+prefix+itemtypes[i].name+((itemtypes[i].stk>1)?":"+itemtypes[i].stk:"")+"<", 8,16+index*16);
-//				index+=1;
-//			}
-//		}
-//		else
-//			if (itemtypes[i].stk){
-//
-//				context.fillText(prefix+itemtypes[i].name+((itemtypes[i].stk>1)?":"+itemtypes[i].stk:""), 8,16+index*16);
-//				index+=1;
-//			}
-//	}
-
-	if (isMobile){
-		context.fillStyle = 'black';
-		context.font = "80px Verdana";
-		context.fillText("<", 0,canvas.height-80);
-		context.fillStyle = 'black';
-		context.font = "80px Verdana";
-		context.fillText(">", 80,canvas.height-80);
-		context.fillStyle = 'black';
-		context.font = "80px Verdana";
-		context.fillText("C", canvas.width-240,canvas.height-80);
-		context.fillStyle = 'black';
-		context.font = "80px Verdana";
-		context.fillText("X", canvas.width-160,canvas.height-80);
-		context.fillStyle = 'black';
-		context.font = "80px Verdana";
-		context.fillText("Z", canvas.width-80,canvas.height-80);
-	}
-
-}, 1000/60);
-
-//var sfoot = new Audio('static/sound/foot.mp3');
-//var spunch = new Audio('static/sound/punch.mp3');
-//var sjump = new Audio('static/sound/jump.mp3');
-//var sslide = new Audio('static/sound/slide.mp3');
-//sfoot.volume = 0.4;
-//spunch.volume = 0.2;
-//sjump.volume = 0.2;
-//sslide.volume = 0.2;
-
-
-
-var startgame = false;
-
-
-
+    return player;
+}());
+var pl = new player();
+var gamestate = /** @class */ (function () {
+    function gamestate() {
+        this.level = new array2d(1000);
+        for (var i = 0; i < 1000; i++) {
+            for (var j = 0; j < 1000; j++) {
+                this.level.s(i, j, Math.floor(1));
+            }
+        }
+        this.vbo = gl.createBuffer();
+        //this.vao=gl.createVertexArray();
+        //gl.bindVertexArray(this.vao);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 0]), gl.STATIC_DRAW);
+        this.vsize = 0;
+        // gl.vertexAttribPointer(0, 2, gl.FLOAT, false, sizeof(1.1)*4, sizeof(1.1)*0);
+        // gl.enableVertexAttribArray(0);
+        // gl.vertexAttribPointer(1, 2, gl.FLOAT, false, sizeof(1.1)*4, sizeof(1.1)*2);
+        // gl.enableVertexAttribArray(1);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        var vertShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertShader, loadtxt('static/world.vert', 'text/plain'));
+        gl.compileShader(vertShader);
+        var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragShader, loadtxt('static/world.frag', 'text/plain'));
+        gl.compileShader(fragShader);
+        this.shader = gl.createProgram();
+        gl.attachShader(this.shader, vertShader);
+        gl.attachShader(this.shader, fragShader);
+        gl.linkProgram(this.shader);
+        gl.deleteShader(vertShader);
+        gl.deleteShader(fragShader);
+        gl.detachShader(this.shader, vertShader);
+        gl.detachShader(this.shader, fragShader);
+        this.update();
+        this.tex = loadTexture('static/test.png');
+    }
+    gamestate.prototype.update = function () {
+        var data = [];
+        for (var i = 1; i < 999; i++)
+            for (var j = 1; j < 999; j++) {
+                if (this.level.g(i, j) == 0) {
+                    var o = 5;
+                    if (this.level.g(i + 1, j) != 0 && this.level.g(i, j + 1) != 0 && this.level.g(i - 1, j) != 0 && this.level.g(i, j - 1) != 0)
+                        o = 5;
+                    else if (this.level.g(i + 1, j) != 0 && !(this.level.g(i - 1, j) != 0 || ((this.level.g(i, j + 1) != 0) != (this.level.g(i, j - 1) != 0))))
+                        o = 4;
+                    else if (this.level.g(i - 1, j) != 0 && !(this.level.g(i + 1, j) != 0 || ((this.level.g(i, j + 1) != 0) != (this.level.g(i, j - 1) != 0))))
+                        o = 3;
+                    else if (this.level.g(i, j + 1) != 0 && !(this.level.g(i, j - 1) != 0 || ((this.level.g(i + 1, j) != 0) != (this.level.g(i - 1, j) != 0))))
+                        o = 2;
+                    else if (this.level.g(i, j - 1) != 0 && !(this.level.g(i, j + 1) != 0 || ((this.level.g(i + 1, j) != 0) != (this.level.g(i - 1, j) != 0))))
+                        o = 1;
+                    else if ((this.level.g(i, j - 1) != 0) == (this.level.g(i, j + 1) != 0) && (this.level.g(i - 1, j) != 0) == (this.level.g(i + 1, j) != 0) && (this.level.g(i, j - 1) != 0) != (this.level.g(i - 1, j) != 0))
+                        o = 0;
+                    else if (this.level.g(i + 1, j) != 0 || this.level.g(i - 1, j) != 0 || this.level.g(i, j + 1) != 0 || this.level.g(i, j - 1) != 0)
+                        o = 5;
+                    else if ((((this.level.g(i + 1, j + 1) != 0) ? 1 : 0) + ((this.level.g(i - 1, j + 1) != 0) ? 1 : 0) + ((this.level.g(i + 1, j - 1) != 0) ? 1 : 0) + ((this.level.g(i - 1, j - 1) != 0) ? 1 : 0)) > 1)
+                        o = 5;
+                    else if (this.level.g(i + 1, j + 1) != 0)
+                        o = 6;
+                    else if (this.level.g(i - 1, j + 1) != 0)
+                        o = 7;
+                    else if (this.level.g(i + 1, j - 1) != 0)
+                        o = 8;
+                    else if (this.level.g(i - 1, j - 1) != 0)
+                        o = 9;
+                    else
+                        o = 0;
+                    data.push(i);
+                    data.push(j);
+                    data.push(0);
+                    data.push(o);
+                    data.push(i);
+                    data.push(j + 1);
+                    data.push(0);
+                    data.push(o + 1);
+                    data.push(i + 1);
+                    data.push(j);
+                    data.push(1);
+                    data.push(o);
+                    data.push(i + 1);
+                    data.push(j + 1);
+                    data.push(1);
+                    data.push(o + 1);
+                    data.push(i + 1);
+                    data.push(j);
+                    data.push(1);
+                    data.push(o);
+                    data.push(i);
+                    data.push(j + 1);
+                    data.push(0);
+                    data.push(o + 1);
+                }
+            }
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        this.vsize = data.length / 4;
+    };
+    gamestate.prototype.render = function () {
+        gl.useProgram(this.shader);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.tex);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+        var t = gl.getUniformLocation(this.shader, 'i');
+        gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(t);
+        // gl.vertexAttribPointer(t2, 2, gl.FLOAT, false, 8*4, 8*2);
+        // gl.enableVertexAttribArray(t2);
+        gl.uniform2f(gl.getUniformLocation(this.shader, 'off'), -pl.pos.x, -pl.pos.y);
+        gl.uniform2f(gl.getUniformLocation(this.shader, 'scl'), 1 / 16, (1 / 16) * (canvas.width / canvas.height));
+        gl.uniform1i(gl.getUniformLocation(this.shader, 'spnum'), 10);
+        gl.drawArrays(gl.TRIANGLES, 0, this.vsize);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.useProgram(null);
+    };
+    return gamestate;
+}());
+var gmst = new gamestate();
+var keys = {
+    up: false,
+    down: false,
+    left: false,
+    right: false,
+    main: false,
+    off: false,
+    block: false,
+    inv: false,
+    friend: false
+};
+var pkeys = {
+    up: false,
+    down: false,
+    left: false,
+    right: false,
+    main: false,
+    off: false,
+    block: false,
+    inv: false,
+    friend: false
+};
+document.addEventListener('keydown', function (event) {
+    switch (event.keyCode) {
+        case 37:
+            if (!event.repeat)
+                keys.left = true;
+            break;
+        case 38:
+            if (!event.repeat)
+                keys.up = true;
+            break;
+        case 39: // ->
+            if (!event.repeat)
+                keys.right = true;
+            break;
+        case 40: // ->
+            if (!event.repeat)
+                keys.down = true;
+            break;
+        case 90: // X
+            if (!event.repeat)
+                keys.main = true;
+            break;
+        case 32: // X
+            if (!event.repeat)
+                keys.block = true;
+            break;
+        case 88:
+            if (!event.repeat)
+                keys.off = true;
+            break;
+        case 67:
+            if (!event.repeat)
+                keys.inv = true;
+            break;
+        case 70:
+            if (!event.repeat)
+                keys.friend = true;
+            break;
+    }
+});
+document.addEventListener('keyup', function (event) {
+    switch (event.keyCode) {
+        case 37:
+            if (!event.repeat)
+                keys.left = false;
+            break;
+        case 38:
+            if (!event.repeat)
+                keys.up = false;
+            break;
+        case 39: // ->
+            if (!event.repeat)
+                keys.right = false;
+            break;
+        case 40: // ->
+            if (!event.repeat)
+                keys.down = false;
+            break;
+        case 90: // X
+            if (!event.repeat)
+                keys.main = false;
+            break;
+        case 32: // X
+            if (!event.repeat)
+                keys.block = false;
+            break;
+        case 88:
+            if (!event.repeat)
+                keys.off = false;
+            break;
+        case 67:
+            if (!event.repeat)
+                keys.inv = false;
+            break;
+        case 70:
+            if (!event.repeat)
+                keys.friend = false;
+            break;
+    }
+});
+canvas.addEventListener('click', function (event) {
+    // Capture the Window X & Y coordinates of the mouse cursor
+    //
+    var plsize = canvas.height / 16;
+    var x = (event.clientX - canvas.width / 2) / plsize;
+    var y = -(event.clientY - canvas.height / 2) / plsize;
+    gmst.level.s(Math.floor(pl.pos.x + x), Math.floor(pl.pos.y + y), (!gmst.level.g(Math.floor(pl.pos.x + x), Math.floor(pl.pos.y + y))) ? 1 : 0);
+    gmst.update();
+}, false);
+var spsheet = new Image();
+spsheet.src = 'static/test.png';
+var spsize = 64;
 var lastUpdateTime = performance.now();
-
-var animspd = 0;
-var animtime = 0.1;
-var punchanim = -0.1;
-//var knx = 0;
-//var kny = 0;
-
-
-//var pslide = false;
-//var djump = false;
-//sslide.loop = true;
-function checkFlag() {
-    if(startgame == false) {
-       window.setTimeout(checkFlag, 100); /* this checks the flag every 100 milliseconds*/
-    } else {
-    document.getElementById('startbutton').remove();
-    lastUpdateTime = performance.now();
-      setInterval(function() {
-  mee.score = Math.max(0,mee.score);
-  mee.hp = Math.min(mee.mxhp,mee.hp);
-
-//  if ((((jump.left&& mee.dir) || (jump.right&& !mee.dir))&&mee.yv>0.1) && !pslide){
-//    if (!isMobile)
-//    sslide.play();
-//
-//  }
-//  if ((!(((jump.left&& mee.dir) || (jump.right&& !mee.dir))&&mee.yv>0.1))&&pslide){
-//    if (!isMobile)
-//    sslide.pause();
-//  }
-//  pslide = ((jump.left&& mee.dir) || (jump.right&& !mee.dir))&&mee.yv>0.1;
-	var currentTime = performance.now();
-    var dt = (currentTime - lastUpdateTime)/1000.0;
-	animtime+=dt;
-	punchanim-=dt;
-
-//	if (animtime>(1.0/animspd)){
-//		if (mee.anim == 0)
-//			mee.anim = 2;
-//		else if (mee.anim == 2)
-//			mee.anim = 0;
-//		if (mee.anim == 1)
-//			mee.anim = 3;
-//		else if (mee.anim == 3)
-//			mee.anim = 1;
-//
-//		if (mee.anim == 10){
-//			mee.anim = 12;
-//
-//        }
-//		else if (mee.anim == 12)
-//			mee.anim = 10;
-//
-//		if (mee.anim == 11){
-//			mee.anim = 13;
-//        }
-//		else if (mee.anim == 13)
-//			mee.anim = 11;
-//		animtime = 0;
-//	}
-
-	if (mee.hp <= 0)
-		{
-			mee = {
-				x  : 0.0,
-				y  : 0.0,
-				xv : 0.0,
-				yv : 0.0,
-				hp : 100.0,
-                mxhp : 100.0,
-				dir : false,
-				score : mee.score-5,
-				name : mee.name,
-				anim : 0,
-				char : mee.char
-			};
-			itemtypes[0].stk=1;
-			for (var i = 1 ; i < itemtypes.length ; i++){
-				itemtypes[i].stk = 0;
-                for (var j = 0 ; j < itemtypes[i].upamnt ; j++)
-                    itemtypes[i].upgrades[j] = false;
-			}
-			sitm = 0;
-		}
-
-    const spd = 10;
-	cool-=dt;
-
-	if (isMobile){
-		keysdown.up     = false;
-		keysdown.left   = false;
-		keysdown.right  = false;
-        keysdown.down  = false;
-		keysdown.use    = false;
-		keysdown.switch = false;
-		for (var i = 0 ; i < ongoingTouches.length ; i += 1){
-			if (ongoingTouches[i].pageX<80)
-				keysdown.left = true;
-			else if (ongoingTouches[i].pageX<160){
-				keysdown.up = true;
-			}
-            else if (ongoingTouches[i].pageX<240){
-				keysdown.down = true;
-			}
-            else if (ongoingTouches[i].pageX<320){
-				keysdown.right = true;
-			}
-			else if (ongoingTouches[i].pageX<canvas.width-80){
-				keysdown.switch = true;
-			}
-			else{
-				keysdown.use = true;
-			}
-		}
-	}
-    
-
+var plvbo = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 5, 1, 0, 1, 5, 0, 1, 0, 6, 1, 1, 1, 6, 1, 0, 1, 5, 0, 1, 0, 6]), gl.STATIC_DRAW);
+gl.bindBuffer(gl.ARRAY_BUFFER, null);
+setInterval(function () {
+    var currentTime = performance.now();
+    var dt = (currentTime - lastUpdateTime) / 1000.0;
     {
-        var x = 0.0;
-        var y = 0.0;
-        if (keysdown.right)
-            x+=1.0;
-        if (keysdown.left)
-            x-=1.0;
-        if (keysdown.up)
-            y-=1.0;
-        if (keysdown.down)
-            y+=1.0;
-
-        var d = Math.sqrt(x*x+y*y);
-        if (d > 0.1){
-            x = x/d;
-            y = y/d;
-            
-            mee.x+=x*dt*3.0;
-            mee.y+=y*dt*3.0;
+        if (canvas.width != window.innerWidth || canvas.height != window.innerHeight) {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
         }
-        
-
+        gl.clearColor(0.9, 0.9, 0.8, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gmst.render();
+        gl.useProgram(gmst.shader);
+        gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
+        var t = gl.getUniformLocation(gmst.shader, 'i');
+        gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(t);
+        gl.uniform2f(gl.getUniformLocation(gmst.shader, 'off'), -0.5, -0.5);
+        gl.uniform2f(gl.getUniformLocation(gmst.shader, 'scl'), 1 / 16, (1 / 16) * (canvas.width / canvas.height));
+        gl.uniform1i(gl.getUniformLocation(gmst.shader, 'spnum'), 10);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.useProgram(null);
+        gl.flush();
+        // context.clearRect(0, 0, canvas.width, canvas.height);
+        // context.fillStyle = 'rgb(0,0,0)';
+        // context.beginPath();
+        // context.rect(0,0,canvas.width,canvas.height);
+        // context.fill();
+        // let plsize = canvas.height/16;
+        //
+        //
+        // let im = Math.min(pl.pos.x+((canvas.width/2)/plsize+1),999);
+        // let jm = Math.min(pl.pos.y+((canvas.height/2)/plsize+1),999);
+        // for (let i = Math.max(Math.floor(pl.pos.x-(((canvas.width/2)/plsize)+1)),1) ; i < im; i++)
+        //   for (let j = Math.max(Math.floor(pl.pos.y-(((canvas.height/2)/plsize)+1)),1) ; j < jm ; j++)
+        //     if (gmst.level.g(i,j)>0){
+        //       context.fillStyle = 'rgb(100,100,100)';
+        //       context.beginPath();
+        //       context.rect((i-pl.pos.x)*plsize+(canvas.width/2)-1,(j-pl.pos.y)*plsize+(canvas.height/2)-1,plsize+2,plsize+2);//characters[mee.char],0,mee.anim*spsize,spsize,spsize
+        //       context.fill();
+        //     }else {
+        //       context.fillStyle = 'rgb(150,150,150)'
+        //
+        //       let o:number = 5;
+        //
+        //       if (gmst.level.g(i+1,j)!=0&&gmst.level.g(i,j+1)!=0&&gmst.level.g(i-1,j)!=0&&gmst.level.g(i,j-1)!=0)
+        //         o=5;
+        //       else if (gmst.level.g(i+1,j)!=0 && !(gmst.level.g(i-1,j)!=0 || ((gmst.level.g(i,j+1)!=0) != (gmst.level.g(i,j-1)!=0) ) ))
+        //         o=4;
+        //       else if (gmst.level.g(i-1,j)!=0 && !(gmst.level.g(i+1,j)!=0 || ((gmst.level.g(i,j+1)!=0) != (gmst.level.g(i,j-1)!=0) ) ))
+        //         o=3;
+        //       else if (gmst.level.g(i,j+1)!=0 && !(gmst.level.g(i,j-1)!=0 || ((gmst.level.g(i+1,j)!=0) != (gmst.level.g(i-1,j)!=0) ) ))
+        //         o=2;
+        //       else if (gmst.level.g(i,j-1)!=0 && !(gmst.level.g(i,j+1)!=0 || ((gmst.level.g(i+1,j)!=0) != (gmst.level.g(i-1,j)!=0) ) ))
+        //         o=1;
+        //       else if ((gmst.level.g(i,j-1)!=0) == (gmst.level.g(i,j+1)!=0) && (gmst.level.g(i-1,j)!=0) == (gmst.level.g(i+1,j)!=0) && (gmst.level.g(i,j-1)!=0) != (gmst.level.g(i-1,j)!=0))
+        //         o=0;
+        //       else if (gmst.level.g(i+1,j)!=0||gmst.level.g(i-1,j)!=0||gmst.level.g(i,j+1)!=0||gmst.level.g(i,j-1)!=0)
+        //         o = 5;
+        //       else if ((((gmst.level.g(i+1,j+1)!=0)?1:0)+((gmst.level.g(i-1,j+1)!=0)?1:0)+((gmst.level.g(i+1,j-1)!=0)?1:0)+((gmst.level.g(i-1,j-1)!=0)?1:0)) > 1)
+        //         o = 5;
+        //       else if (gmst.level.g(i+1,j+1)!=0)
+        //         o = 6;
+        //       else if (gmst.level.g(i-1,j+1)!=0)
+        //         o = 7;
+        //       else if (gmst.level.g(i+1,j-1)!=0)
+        //         o = 8;
+        //       else if (gmst.level.g(i-1,j-1)!=0)
+        //         o = 9;
+        //       else
+        //         o = 0;
+        //
+        //
+        //       context.drawImage(spsheet,0,o*spsize,spsize+2,spsize+2,(i-pl.pos.x)*plsize+(canvas.width/2)-1,(j-pl.pos.y)*plsize+(canvas.height/2)-1,plsize+2,plsize+2);
+        //   }
+        //
+        //
+        //
+        //
+        // context.fillStyle = 'blue';
+        // context.beginPath();
+        // context.rect((canvas.width/2)-plsize/2,(canvas.height/2)-plsize/2,plsize,plsize);//characters[mee.char],0,mee.anim*spsize,spsize,spsize
+        // context.fill();
+        //
+        // context.fillStyle = 'black';
+        // context.font = "16px Verdana";
+        // context.fillText("FPS:"+Math.floor(1/dt),10,18);
     }
-
-	keysdown.pup = keysdown.up;
-	keysdown.pleft = keysdown.left;
-	keysdown.pright = keysdown.right;
-    keysdown.pdown = keysdown.down;
-	keysdown.puse = keysdown.use;
-	keysdown.pswitch = keysdown.switch;
-
-
-
-    var steps = Math.floor(Math.sqrt(mee.xv*dt*mee.xv*dt+mee.yv*dt*mee.yv*dt)*8.0)+1;
-    var altdt = dt/steps;
-    //console.log(1.0/dt);
-    
-    
-    for (var it = 0; it < steps; it++) {
-        //for (var id in cplayers) {
-        //    if (id != socket.id){
-        //        collidepl(mee,cplayers[id]);
-        //    }
-        //}
-        
-        var plrect = {top:mee.y-0.5,bottom:mee.y+0.5,right:mee.x+0.5,left:mee.x-0.5};
-		if (Math.abs(mee.xv) > 0.1*dt)
-            mee.x += mee.xv*altdt;
-        if (Math.abs(mee.yv) > 0.1*dt)
-            mee.y += mee.yv*altdt;
-        
-        
-		
-        
-	
+    var v = new vec(0, 0);
+    {
+        if (keys.up)
+            v.y++;
+        if (keys.down)
+            v.y--;
+        if (keys.left)
+            v.x--;
+        if (keys.right)
+            v.x++;
+        if (v.lensq() > 0.1)
+            v = v.norm().smul(dt * 5);
     }
-    
-    //for (var id in cplayers) {
-    //    if (id != socket.id){
-    //        collidepl(mee,cplayers[id]);
-    //    }
-    //}
-    
-
-    const f = 3;
-	
-
-
-	if (punchanim>0.0){
-		if (mee.dir){
-			mee.anim=14;
-		}else{
-			mee.anim=15;
-		}
-	}
-
-
+    var steps = Math.ceil(v.len() * 2.0 + 0.1);
+    var va = v.sdiv(steps);
+    for (var i = 0; i < steps; i++) {
+        pl.pos = pl.pos.add(va);
+        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y)) == 0)
+            pl.pos.x = Math.floor(pl.pos.x) + 0.505;
+        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y)) == 0)
+            pl.pos.x = Math.floor(pl.pos.x) + 0.495;
+        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y + 0.495)) == 0)
+            pl.pos.y = Math.floor(pl.pos.y) + 0.495;
+        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y - 0.495)) == 0)
+            pl.pos.y = Math.floor(pl.pos.y) + 0.505;
+        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y - 0.495)) == 0)
+            if (Math.abs(pl.pos.y - (Math.floor(pl.pos.y) + 0.5)) < Math.abs(pl.pos.x - (Math.floor(pl.pos.x) + 0.5)))
+                pl.pos.y = Math.floor(pl.pos.y) + 0.505;
+            else
+                pl.pos.x = Math.floor(pl.pos.x) + 0.505;
+        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y - 0.495)) == 0)
+            if (Math.abs(pl.pos.y - (Math.floor(pl.pos.y) + 0.5)) < Math.abs(pl.pos.x - (Math.floor(pl.pos.x) + 0.5)))
+                pl.pos.y = Math.floor(pl.pos.y) + 0.505;
+            else
+                pl.pos.x = Math.floor(pl.pos.x) + 0.495;
+        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y + 0.495)) == 0)
+            if (Math.abs(pl.pos.y - (Math.floor(pl.pos.y) + 0.5)) < Math.abs(pl.pos.x - (Math.floor(pl.pos.x) + 0.5)))
+                pl.pos.y = Math.floor(pl.pos.y) + 0.495;
+            else
+                pl.pos.x = Math.floor(pl.pos.x) + 0.505;
+        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y + 0.495)) == 0)
+            if (Math.abs(pl.pos.y - (Math.floor(pl.pos.y) + 0.5)) < Math.abs(pl.pos.x - (Math.floor(pl.pos.x) + 0.5)))
+                pl.pos.y = Math.floor(pl.pos.y) + 0.495;
+            else
+                pl.pos.x = Math.floor(pl.pos.x) + 0.495;
+    }
+    pkeys = keys;
     lastUpdateTime = currentTime;
-
-}, 1000/60);
-    }
-}
-
-checkFlag();
+}, 0);

@@ -1,4 +1,6 @@
 // Dependencies.
+
+
 var express = require('express');
 var http = require('http');
 var path = require('path');
@@ -28,7 +30,7 @@ server.listen(PORT, function() {
 var players = {};
 
 io.on('connection', function(socket) {
-  
+
   socket.on('n', function() {
     players[socket.id] = {
       x: 0.0,
