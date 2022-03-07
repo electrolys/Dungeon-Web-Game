@@ -31,6 +31,12 @@ function loadtxt(filePath, mimeType) {
         return null;
     }
 }
+function loadJSON(filePath) {
+    // Load json file;
+    var json = loadtxt(filePath, "application/json");
+    // Parse json
+    return JSON.parse(json);
+}
 var vec = /** @class */ (function () {
     function vec(x, y) {
         this.x = x;
@@ -119,7 +125,7 @@ function loadTexture(url) {
 // var context:any = canvas.getContext('2d');
 var player = /** @class */ (function () {
     function player() {
-        this.pos = new vec(23, 12);
+        this.pos = new vec(10, 980);
     }
     return player;
 }());
@@ -127,9 +133,12 @@ var pl = new player();
 var gamestate = /** @class */ (function () {
     function gamestate() {
         this.level = new array2d(1000);
+        var js = loadJSON("static/level.json");
+        var inc = 0;
         for (var i = 0; i < 1000; i++) {
             for (var j = 0; j < 1000; j++) {
-                this.level.s(i, j, Math.floor(1));
+                this.level.s(i, j, js[inc]);
+                inc++;
             }
         }
         this.vbo = gl.createBuffer();
@@ -162,61 +171,62 @@ var gamestate = /** @class */ (function () {
     }
     gamestate.prototype.update = function () {
         var data = [];
-        for (var i = 1; i < 999; i++)
-            for (var j = 1; j < 999; j++) {
-                if (this.level.g(i, j) == 0) {
-                    var o = 5;
-                    if (this.level.g(i + 1, j) != 0 && this.level.g(i, j + 1) != 0 && this.level.g(i - 1, j) != 0 && this.level.g(i, j - 1) != 0)
-                        o = 5;
-                    else if (this.level.g(i + 1, j) != 0 && !(this.level.g(i - 1, j) != 0 || ((this.level.g(i, j + 1) != 0) != (this.level.g(i, j - 1) != 0))))
-                        o = 4;
-                    else if (this.level.g(i - 1, j) != 0 && !(this.level.g(i + 1, j) != 0 || ((this.level.g(i, j + 1) != 0) != (this.level.g(i, j - 1) != 0))))
-                        o = 3;
-                    else if (this.level.g(i, j + 1) != 0 && !(this.level.g(i, j - 1) != 0 || ((this.level.g(i + 1, j) != 0) != (this.level.g(i - 1, j) != 0))))
-                        o = 2;
-                    else if (this.level.g(i, j - 1) != 0 && !(this.level.g(i, j + 1) != 0 || ((this.level.g(i + 1, j) != 0) != (this.level.g(i - 1, j) != 0))))
-                        o = 1;
-                    else if ((this.level.g(i, j - 1) != 0) == (this.level.g(i, j + 1) != 0) && (this.level.g(i - 1, j) != 0) == (this.level.g(i + 1, j) != 0) && (this.level.g(i, j - 1) != 0) != (this.level.g(i - 1, j) != 0))
-                        o = 0;
-                    else if (this.level.g(i + 1, j) != 0 || this.level.g(i - 1, j) != 0 || this.level.g(i, j + 1) != 0 || this.level.g(i, j - 1) != 0)
-                        o = 5;
-                    else if ((((this.level.g(i + 1, j + 1) != 0) ? 1 : 0) + ((this.level.g(i - 1, j + 1) != 0) ? 1 : 0) + ((this.level.g(i + 1, j - 1) != 0) ? 1 : 0) + ((this.level.g(i - 1, j - 1) != 0) ? 1 : 0)) > 1)
-                        o = 5;
-                    else if (this.level.g(i + 1, j + 1) != 0)
-                        o = 6;
-                    else if (this.level.g(i - 1, j + 1) != 0)
-                        o = 7;
-                    else if (this.level.g(i + 1, j - 1) != 0)
-                        o = 8;
-                    else if (this.level.g(i - 1, j - 1) != 0)
-                        o = 9;
-                    else
-                        o = 0;
-                    data.push(i);
-                    data.push(j);
-                    data.push(0);
-                    data.push(o);
-                    data.push(i);
-                    data.push(j + 1);
-                    data.push(0);
-                    data.push(o + 1);
-                    data.push(i + 1);
-                    data.push(j);
-                    data.push(1);
-                    data.push(o);
-                    data.push(i + 1);
-                    data.push(j + 1);
-                    data.push(1);
-                    data.push(o + 1);
-                    data.push(i + 1);
-                    data.push(j);
-                    data.push(1);
-                    data.push(o);
-                    data.push(i);
-                    data.push(j + 1);
-                    data.push(0);
-                    data.push(o + 1);
-                }
+        for (var i = 1; i < 1000; i++)
+            for (var j = 1; j < 1000; j++) {
+                var o = 5;
+                if (this.level.g(i, j) > 0)
+                    o = 10;
+                else if (this.level.g(i + 1, j) > 0 && this.level.g(i, j + 1) > 0 && this.level.g(i - 1, j) > 0 && this.level.g(i, j - 1) > 0)
+                    o = 5;
+                else if (this.level.g(i + 1, j) > 0 && !(this.level.g(i - 1, j) > 0 || ((this.level.g(i, j + 1) > 0) != (this.level.g(i, j - 1) > 0))))
+                    o = 4;
+                else if (this.level.g(i - 1, j) > 0 && !(this.level.g(i + 1, j) > 0 || ((this.level.g(i, j + 1) > 0) != (this.level.g(i, j - 1) > 0))))
+                    o = 3;
+                else if (this.level.g(i, j + 1) > 0 && !(this.level.g(i, j - 1) > 0 || ((this.level.g(i + 1, j) > 0) != (this.level.g(i - 1, j) > 0))))
+                    o = 2;
+                else if (this.level.g(i, j - 1) > 0 && !(this.level.g(i, j + 1) > 0 || ((this.level.g(i + 1, j) > 0) != (this.level.g(i - 1, j) > 0))))
+                    o = 1;
+                else if ((this.level.g(i, j - 1) > 0) == (this.level.g(i, j + 1) > 0) && (this.level.g(i - 1, j) > 0) == (this.level.g(i + 1, j) > 0) && (this.level.g(i, j - 1) > 0) != (this.level.g(i - 1, j) > 0))
+                    o = 0;
+                else if (this.level.g(i + 1, j) > 0 || this.level.g(i - 1, j) > 0 || this.level.g(i, j + 1) > 0 || this.level.g(i, j - 1) > 0)
+                    o = 5;
+                else if ((((this.level.g(i + 1, j + 1) > 0) ? 1 : 0) + ((this.level.g(i - 1, j + 1) > 0) ? 1 : 0) + ((this.level.g(i + 1, j - 1) > 0) ? 1 : 0) + ((this.level.g(i - 1, j - 1) > 0) ? 1 : 0)) > 1)
+                    o = 5;
+                else if (this.level.g(i + 1, j + 1) > 0)
+                    o = 6;
+                else if (this.level.g(i - 1, j + 1) > 0)
+                    o = 7;
+                else if (this.level.g(i + 1, j - 1) > 0)
+                    o = 8;
+                else if (this.level.g(i - 1, j - 1) > 0)
+                    o = 9;
+                else
+                    o = 0;
+                var id = Math.abs(this.level.g(i, j)) - 1;
+                data.push(i);
+                data.push(j);
+                data.push(o + 0.01);
+                data.push(id + 0.01);
+                data.push(i);
+                data.push(j + 1);
+                data.push(o + 0.01);
+                data.push(id + 0.99);
+                data.push(i + 1);
+                data.push(j);
+                data.push(o + 0.99);
+                data.push(id + 0.01);
+                data.push(i + 1);
+                data.push(j + 1);
+                data.push(o + 0.99);
+                data.push(id + 0.99);
+                data.push(i + 1);
+                data.push(j);
+                data.push(o + 0.99);
+                data.push(id + 0.01);
+                data.push(i);
+                data.push(j + 1);
+                data.push(o + 0.01);
+                data.push(id + 0.99);
             }
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
@@ -235,7 +245,7 @@ var gamestate = /** @class */ (function () {
         // gl.enableVertexAttribArray(t2);
         gl.uniform2f(gl.getUniformLocation(this.shader, 'off'), -pl.pos.x, -pl.pos.y);
         gl.uniform2f(gl.getUniformLocation(this.shader, 'scl'), 1 / 16, (1 / 16) * (canvas.width / canvas.height));
-        gl.uniform1i(gl.getUniformLocation(this.shader, 'spnum'), 10);
+        gl.uniform2i(gl.getUniformLocation(this.shader, 'spnum'), 11, 2);
         gl.drawArrays(gl.TRIANGLES, 0, this.vsize);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.useProgram(null);
@@ -345,22 +355,11 @@ document.addEventListener('keyup', function (event) {
             break;
     }
 });
-canvas.addEventListener('click', function (event) {
-    // Capture the Window X & Y coordinates of the mouse cursor
-    //
-    var plsize = canvas.height / 16;
-    var x = (event.clientX - canvas.width / 2) / plsize;
-    var y = -(event.clientY - canvas.height / 2) / plsize;
-    gmst.level.s(Math.floor(pl.pos.x + x), Math.floor(pl.pos.y + y), (!gmst.level.g(Math.floor(pl.pos.x + x), Math.floor(pl.pos.y + y))) ? 1 : 0);
-    gmst.update();
-}, false);
-var spsheet = new Image();
-spsheet.src = 'static/test.png';
 var spsize = 64;
 var lastUpdateTime = performance.now();
 var plvbo = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 5, 1, 0, 1, 5, 0, 1, 0, 6, 1, 1, 1, 6, 1, 0, 1, 5, 0, 1, 0, 6]), gl.STATIC_DRAW);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0]), gl.STATIC_DRAW);
 gl.bindBuffer(gl.ARRAY_BUFFER, null);
 setInterval(function () {
     var currentTime = performance.now();
@@ -381,7 +380,7 @@ setInterval(function () {
         gl.enableVertexAttribArray(t);
         gl.uniform2f(gl.getUniformLocation(gmst.shader, 'off'), -0.5, -0.5);
         gl.uniform2f(gl.getUniformLocation(gmst.shader, 'scl'), 1 / 16, (1 / 16) * (canvas.width / canvas.height));
-        gl.uniform1i(gl.getUniformLocation(gmst.shader, 'spnum'), 10);
+        gl.uniform2i(gl.getUniformLocation(gmst.shader, 'spnum'), 11, 2);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.useProgram(null);
@@ -462,36 +461,36 @@ setInterval(function () {
         if (keys.right)
             v.x++;
         if (v.lensq() > 0.1)
-            v = v.norm().smul(dt * 5);
+            v = v.norm().smul(dt * 8);
     }
     var steps = Math.ceil(v.len() * 2.0 + 0.1);
     var va = v.sdiv(steps);
     for (var i = 0; i < steps; i++) {
         pl.pos = pl.pos.add(va);
-        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y)) == 0)
+        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y)) <= 0)
             pl.pos.x = Math.floor(pl.pos.x) + 0.505;
-        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y)) == 0)
+        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y)) <= 0)
             pl.pos.x = Math.floor(pl.pos.x) + 0.495;
-        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y + 0.495)) == 0)
+        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y + 0.495)) <= 0)
             pl.pos.y = Math.floor(pl.pos.y) + 0.495;
-        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y - 0.495)) == 0)
+        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y - 0.495)) <= 0)
             pl.pos.y = Math.floor(pl.pos.y) + 0.505;
-        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y - 0.495)) == 0)
+        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y - 0.495)) <= 0)
             if (Math.abs(pl.pos.y - (Math.floor(pl.pos.y) + 0.5)) < Math.abs(pl.pos.x - (Math.floor(pl.pos.x) + 0.5)))
                 pl.pos.y = Math.floor(pl.pos.y) + 0.505;
             else
                 pl.pos.x = Math.floor(pl.pos.x) + 0.505;
-        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y - 0.495)) == 0)
+        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y - 0.495)) <= 0)
             if (Math.abs(pl.pos.y - (Math.floor(pl.pos.y) + 0.5)) < Math.abs(pl.pos.x - (Math.floor(pl.pos.x) + 0.5)))
                 pl.pos.y = Math.floor(pl.pos.y) + 0.505;
             else
                 pl.pos.x = Math.floor(pl.pos.x) + 0.495;
-        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y + 0.495)) == 0)
+        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y + 0.495)) <= 0)
             if (Math.abs(pl.pos.y - (Math.floor(pl.pos.y) + 0.5)) < Math.abs(pl.pos.x - (Math.floor(pl.pos.x) + 0.5)))
                 pl.pos.y = Math.floor(pl.pos.y) + 0.495;
             else
                 pl.pos.x = Math.floor(pl.pos.x) + 0.505;
-        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y + 0.495)) == 0)
+        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y + 0.495)) <= 0)
             if (Math.abs(pl.pos.y - (Math.floor(pl.pos.y) + 0.5)) < Math.abs(pl.pos.x - (Math.floor(pl.pos.x) + 0.5)))
                 pl.pos.y = Math.floor(pl.pos.y) + 0.495;
             else
