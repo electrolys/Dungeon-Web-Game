@@ -87,11 +87,6 @@ var array2d = /** @class */ (function () {
     array2d.prototype.s = function (i, j, v) { this.data[i + j * this.sz] = v; };
     return array2d;
 }());
-var vtx = /** @class */ (function () {
-    function vtx() {
-    }
-    return vtx;
-}());
 var canvas = document.getElementById('canvas');
 var gl = canvas.getContext('experimental-webgl', { preserveDrawingBuffer: false });
 function loadTexture(url) {
@@ -147,7 +142,7 @@ var gamestate = /** @class */ (function () {
             }
         for (var i = 1; i < 1001; i++) {
             for (var j = 1; j < 1001; j++) {
-                this.level.s(i, j, js[inc]);
+                this.level.s(i, j, js["tiles"][inc]);
                 inc++;
             }
         }
@@ -255,12 +250,12 @@ var gamestate = /** @class */ (function () {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.tex);
         gl.uniform2f(gl.getUniformLocation(this.shader, 'off'), -pl.pos.x, -pl.pos.y);
-        gl.uniform2f(gl.getUniformLocation(this.shader, 'scl'), 1 / 16, (1 / 16) * (canvas.width / canvas.height));
+        gl.uniform2f(gl.getUniformLocation(gmst.shader, 'scl'), (1 / 10) * (canvas.height / canvas.width), 1 / 10);
         gl.uniform2i(gl.getUniformLocation(this.shader, 'spnum'), 11, 2);
-        var stop = pl.pos.y - 16;
-        var sbottom = pl.pos.y + 16;
-        var sleft = pl.pos.x - 16 * (canvas.width / canvas.height);
-        var sright = pl.pos.x + 16 * (canvas.width / canvas.height);
+        var stop = pl.pos.y - 11;
+        var sbottom = pl.pos.y + 11;
+        var sleft = pl.pos.x - 11 / (canvas.height / canvas.width);
+        var sright = pl.pos.x + 11 / (canvas.height / canvas.width);
         for (var i = 0; i < 50; i++)
             for (var j = 0; j < 50; j++) {
                 if (!(i * 20 > sright ||
@@ -304,93 +299,107 @@ var pkeys = {
     inv: false,
     friend: false
 };
-document.addEventListener('keydown', function (event) {
-    switch (event.keyCode) {
-        case 37:
-            if (!event.repeat)
-                keys.left = true;
-            break;
-        case 38:
-            if (!event.repeat)
-                keys.up = true;
-            break;
-        case 39: // ->
-            if (!event.repeat)
-                keys.right = true;
-            break;
-        case 40: // ->
-            if (!event.repeat)
-                keys.down = true;
-            break;
-        case 90: // X
-            if (!event.repeat)
-                keys.main = true;
-            break;
-        case 32: // X
-            if (!event.repeat)
-                keys.block = true;
-            break;
-        case 88:
-            if (!event.repeat)
-                keys.off = true;
-            break;
-        case 67:
-            if (!event.repeat)
-                keys.inv = true;
-            break;
-        case 70:
-            if (!event.repeat)
-                keys.friend = true;
-            break;
-    }
-});
-document.addEventListener('keyup', function (event) {
-    switch (event.keyCode) {
-        case 37:
-            if (!event.repeat)
-                keys.left = false;
-            break;
-        case 38:
-            if (!event.repeat)
-                keys.up = false;
-            break;
-        case 39: // ->
-            if (!event.repeat)
-                keys.right = false;
-            break;
-        case 40: // ->
-            if (!event.repeat)
-                keys.down = false;
-            break;
-        case 90: // X
-            if (!event.repeat)
-                keys.main = false;
-            break;
-        case 32: // X
-            if (!event.repeat)
-                keys.block = false;
-            break;
-        case 88:
-            if (!event.repeat)
-                keys.off = false;
-            break;
-        case 67:
-            if (!event.repeat)
-                keys.inv = false;
-            break;
-        case 70:
-            if (!event.repeat)
-                keys.friend = false;
-            break;
-    }
-});
+var isMobile = !!(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+var ongoingTouches = [];
+if (isMobile) {
+    function handleStart(e) { ongoingTouches = e.touches; }
+    function handleEnd(e) { ongoingTouches = e.touches; }
+    function handleCancel(e) { ongoingTouches = e.touches; }
+    function handleMove(e) { ongoingTouches = e.touches; }
+    canvas.addEventListener("touchstart", handleStart, false);
+    canvas.addEventListener("touchend", handleEnd, false);
+    canvas.addEventListener("touchcancel", handleCancel, false);
+    canvas.addEventListener("touchmove", handleMove, false);
+}
+else {
+    document.addEventListener('keydown', function (event) {
+        switch (event.keyCode) {
+            case 37:
+                if (!event.repeat)
+                    keys.left = true;
+                break;
+            case 38:
+                if (!event.repeat)
+                    keys.up = true;
+                break;
+            case 39: // ->
+                if (!event.repeat)
+                    keys.right = true;
+                break;
+            case 40: // ->
+                if (!event.repeat)
+                    keys.down = true;
+                break;
+            case 90: // X
+                if (!event.repeat)
+                    keys.main = true;
+                break;
+            case 32: // X
+                if (!event.repeat)
+                    keys.block = true;
+                break;
+            case 88:
+                if (!event.repeat)
+                    keys.off = true;
+                break;
+            case 67:
+                if (!event.repeat)
+                    keys.inv = true;
+                break;
+            case 70:
+                if (!event.repeat)
+                    keys.friend = true;
+                break;
+        }
+    });
+    document.addEventListener('keyup', function (event) {
+        switch (event.keyCode) {
+            case 37:
+                if (!event.repeat)
+                    keys.left = false;
+                break;
+            case 38:
+                if (!event.repeat)
+                    keys.up = false;
+                break;
+            case 39: // ->
+                if (!event.repeat)
+                    keys.right = false;
+                break;
+            case 40: // ->
+                if (!event.repeat)
+                    keys.down = false;
+                break;
+            case 90: // X
+                if (!event.repeat)
+                    keys.main = false;
+                break;
+            case 32: // X
+                if (!event.repeat)
+                    keys.block = false;
+                break;
+            case 88:
+                if (!event.repeat)
+                    keys.off = false;
+                break;
+            case 67:
+                if (!event.repeat)
+                    keys.inv = false;
+                break;
+            case 70:
+                if (!event.repeat)
+                    keys.friend = false;
+                break;
+        }
+    });
+}
 var spsize = 64;
 var lastUpdateTime = performance.now();
 var plvbo = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0]), gl.STATIC_DRAW);
 gl.bindBuffer(gl.ARRAY_BUFFER, null);
-setInterval(function () {
+function updatefunc() {
     var currentTime = performance.now();
     var dt = (currentTime - lastUpdateTime) / 1000.0;
     {
@@ -399,7 +408,7 @@ setInterval(function () {
             canvas.height = window.innerHeight;
             gl.viewport(0, 0, canvas.width, canvas.height);
         }
-        gl.clearColor(0.9, 0.9, 0.8, 1);
+        gl.clearColor(0.23137, 0.23137, 0.23137, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
         gmst.render();
         gl.useProgram(gmst.shader);
@@ -408,79 +417,21 @@ setInterval(function () {
         gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(t);
         gl.uniform2f(gl.getUniformLocation(gmst.shader, 'off'), -0.5, -0.5);
-        gl.uniform2f(gl.getUniformLocation(gmst.shader, 'scl'), 1 / 16, (1 / 16) * (canvas.width / canvas.height));
+        gl.uniform2f(gl.getUniformLocation(gmst.shader, 'scl'), (1 / 10) * (canvas.height / canvas.width), 1 / 10);
         gl.uniform2i(gl.getUniformLocation(gmst.shader, 'spnum'), 11, 2);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.useProgram(null);
-        gl.flush();
-        // context.clearRect(0, 0, canvas.width, canvas.height);
-        // context.fillStyle = 'rgb(0,0,0)';
-        // context.beginPath();
-        // context.rect(0,0,canvas.width,canvas.height);
-        // context.fill();
-        // let plsize = canvas.height/16;
-        //
-        //
-        // let im = Math.min(pl.pos.x+((canvas.width/2)/plsize+1),999);
-        // let jm = Math.min(pl.pos.y+((canvas.height/2)/plsize+1),999);
-        // for (let i = Math.max(Math.floor(pl.pos.x-(((canvas.width/2)/plsize)+1)),1) ; i < im; i++)
-        //   for (let j = Math.max(Math.floor(pl.pos.y-(((canvas.height/2)/plsize)+1)),1) ; j < jm ; j++)
-        //     if (gmst.level.g(i,j)>0){
-        //       context.fillStyle = 'rgb(100,100,100)';
-        //       context.beginPath();
-        //       context.rect((i-pl.pos.x)*plsize+(canvas.width/2)-1,(j-pl.pos.y)*plsize+(canvas.height/2)-1,plsize+2,plsize+2);//characters[mee.char],0,mee.anim*spsize,spsize,spsize
-        //       context.fill();
-        //     }else {
-        //       context.fillStyle = 'rgb(150,150,150)'
-        //
-        //       let o:number = 5;
-        //
-        //       if (gmst.level.g(i+1,j)!=0&&gmst.level.g(i,j+1)!=0&&gmst.level.g(i-1,j)!=0&&gmst.level.g(i,j-1)!=0)
-        //         o=5;
-        //       else if (gmst.level.g(i+1,j)!=0 && !(gmst.level.g(i-1,j)!=0 || ((gmst.level.g(i,j+1)!=0) != (gmst.level.g(i,j-1)!=0) ) ))
-        //         o=4;
-        //       else if (gmst.level.g(i-1,j)!=0 && !(gmst.level.g(i+1,j)!=0 || ((gmst.level.g(i,j+1)!=0) != (gmst.level.g(i,j-1)!=0) ) ))
-        //         o=3;
-        //       else if (gmst.level.g(i,j+1)!=0 && !(gmst.level.g(i,j-1)!=0 || ((gmst.level.g(i+1,j)!=0) != (gmst.level.g(i-1,j)!=0) ) ))
-        //         o=2;
-        //       else if (gmst.level.g(i,j-1)!=0 && !(gmst.level.g(i,j+1)!=0 || ((gmst.level.g(i+1,j)!=0) != (gmst.level.g(i-1,j)!=0) ) ))
-        //         o=1;
-        //       else if ((gmst.level.g(i,j-1)!=0) == (gmst.level.g(i,j+1)!=0) && (gmst.level.g(i-1,j)!=0) == (gmst.level.g(i+1,j)!=0) && (gmst.level.g(i,j-1)!=0) != (gmst.level.g(i-1,j)!=0))
-        //         o=0;
-        //       else if (gmst.level.g(i+1,j)!=0||gmst.level.g(i-1,j)!=0||gmst.level.g(i,j+1)!=0||gmst.level.g(i,j-1)!=0)
-        //         o = 5;
-        //       else if ((((gmst.level.g(i+1,j+1)!=0)?1:0)+((gmst.level.g(i-1,j+1)!=0)?1:0)+((gmst.level.g(i+1,j-1)!=0)?1:0)+((gmst.level.g(i-1,j-1)!=0)?1:0)) > 1)
-        //         o = 5;
-        //       else if (gmst.level.g(i+1,j+1)!=0)
-        //         o = 6;
-        //       else if (gmst.level.g(i-1,j+1)!=0)
-        //         o = 7;
-        //       else if (gmst.level.g(i+1,j-1)!=0)
-        //         o = 8;
-        //       else if (gmst.level.g(i-1,j-1)!=0)
-        //         o = 9;
-        //       else
-        //         o = 0;
-        //
-        //
-        //       context.drawImage(spsheet,0,o*spsize,spsize+2,spsize+2,(i-pl.pos.x)*plsize+(canvas.width/2)-1,(j-pl.pos.y)*plsize+(canvas.height/2)-1,plsize+2,plsize+2);
-        //   }
-        //
-        //
-        //
-        //
-        // context.fillStyle = 'blue';
-        // context.beginPath();
-        // context.rect((canvas.width/2)-plsize/2,(canvas.height/2)-plsize/2,plsize,plsize);//characters[mee.char],0,mee.anim*spsize,spsize,spsize
-        // context.fill();
-        //
-        // context.fillStyle = 'black';
-        // context.font = "16px Verdana";
-        // context.fillText("FPS:"+Math.floor(1/dt),10,18);
     }
     var v = new vec(0, 0);
-    {
+    if (isMobile) {
+        for (var i = 0; i < ongoingTouches.length; i += 1) {
+            if (ongoingTouches[i].pageX < canvas.width / 2) {
+                v = v.add(new vec(ongoingTouches[i].pageX - canvas.width / 4, ongoingTouches[i].pageY - canvas.height / 2));
+            }
+        }
+    }
+    else {
         if (keys.up)
             v.y++;
         if (keys.down)
@@ -489,12 +440,12 @@ setInterval(function () {
             v.x--;
         if (keys.right)
             v.x++;
-        if (v.lensq() > 0.1)
-            v = v.norm().smul(dt * 8);
     }
+    if (v.lensq() > 0.1)
+        v = v.norm().smul(dt * 8);
     var steps = Math.ceil(v.len() * 2.0 + 0.1);
     var va = v.sdiv(steps);
-    for (var i = 0; i < steps; i++) {
+    for (var i_1 = 0; i_1 < steps; i_1++) {
         pl.pos = pl.pos.add(va);
         if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y)) <= 0)
             pl.pos.x = Math.floor(pl.pos.x) + 0.505;
@@ -527,4 +478,6 @@ setInterval(function () {
     }
     pkeys = keys;
     lastUpdateTime = currentTime;
-}, 0);
+    requestAnimationFrame(updatefunc);
+}
+requestAnimationFrame(updatefunc);
