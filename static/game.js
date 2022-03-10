@@ -302,6 +302,13 @@ var pkeys = {
 var isMobile = !!(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
 var ongoingTouches = [];
 if (isMobile) {
+    window.addEventListener("load", function () {
+        // Set a timeout...
+        setTimeout(function () {
+            // Hide the address bar!
+            window.scrollTo(0, 1);
+        }, 0);
+    });
     function handleStart(e) { ongoingTouches = e.touches; }
     function handleEnd(e) { ongoingTouches = e.touches; }
     function handleCancel(e) { ongoingTouches = e.touches; }
