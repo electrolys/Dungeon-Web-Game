@@ -302,10 +302,10 @@ var pkeys = {
 var isMobile = !!(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
 var ongoingTouches = [];
 if (isMobile) {
-    function handleStart(e) { ongoingTouches = e.touches; }
+    function handleStart(e) { ongoingTouches = e.touches; e.preventDefault(); }
     function handleEnd(e) { ongoingTouches = e.touches; }
     function handleCancel(e) { ongoingTouches = e.touches; }
-    function handleMove(e) { ongoingTouches = e.touches; }
+    function handleMove(e) { ongoingTouches = e.touches; e.preventDefault(); }
     canvas.addEventListener("touchstart", handleStart, false);
     canvas.addEventListener("touchend", handleEnd, false);
     canvas.addEventListener("touchcancel", handleCancel, false);
