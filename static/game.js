@@ -427,7 +427,7 @@ function updatefunc() {
     if (isMobile) {
         for (var i = 0; i < ongoingTouches.length; i += 1) {
             if (ongoingTouches[i].pageX < canvas.width / 2) {
-                v = v.add(new vec(ongoingTouches[i].pageX - canvas.width / 4, ongoingTouches[i].pageY - canvas.height / 2));
+                v = v.add(new vec(ongoingTouches[i].pageX - canvas.width / 4, -(ongoingTouches[i].pageY - canvas.height / 2)));
             }
         }
     }
