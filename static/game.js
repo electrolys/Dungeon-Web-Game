@@ -302,6 +302,19 @@ var pkeys = {
 var isMobile = !!(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
 var ongoingTouches = [];
 if (isMobile) {
+    function toggleFullScreen() {
+        var doc = window.document;
+        var docEl = doc.documentElement;
+        var requestFullScreen = docEl["requestFullscreen"] || docEl["mozRequestFullScreen"] || docEl["webkitRequestFullScreen"] || docEl["msRequestFullscreen"];
+        var cancelFullScreen = doc["exitFullscreen"] || doc["mozCancelFullScreen"] || doc["webkitExitFullscreen"] || doc["msExitFullscreen"];
+        if (!doc["fullscreenElement"] && !doc["mozFullScreenElement"] && !doc["webkitFullscreenElement"] && !doc["msFullscreenElement"]) {
+            requestFullScreen.call(docEl);
+        }
+        else {
+            cancelFullScreen.call(doc);
+        }
+    }
+    toggleFullScreen();
     window.addEventListener("load", function () {
         // Set a timeout...
         setTimeout(function () {
