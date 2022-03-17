@@ -29,16 +29,24 @@ server.listen(PORT, function() {
 
 var players = {};
 
+var openedchests = {};
+
 io.on('connection', function(socket) {
 
   socket.on('n', function() {
     players[socket.id] = {
-      x: 0.0,
-      y: 0.0
+      pos:{'x':0,'y':0},hp:0,
     };
   });
   socket.on('chat', function(message) {
     io.sockets.emit('c',message);
+  });
+  socket.on('ch', function(chest,user) {
+    if (!openedchests[chest.id]){
+      openedchests[chest.id]=true;
+      io.sockets.to(user).emit('chg',chest);
+    }
+
   });
   socket.on('u', function(data) {
     players[socket.id] = data;
@@ -51,15 +59,3 @@ io.on('connection', function(socket) {
 setInterval(function() {
   io.sockets.emit('s', players);
 }, 1000 / 30);
-
-
-var readline = require('readline');
-
-var rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-rl.on('line', function (line) {
-  io.sockets.emit('kick',line);
-});

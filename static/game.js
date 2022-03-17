@@ -66,6 +66,9 @@ var vec = /** @class */ (function () {
     vec.prototype.len = function () {
         return Math.sqrt(this.lensq());
     };
+    vec.prototype.dot = function (t) {
+        return t.x * this.x + t.y * this.y;
+    };
     vec.prototype.norm = function () {
         return this.sdiv(this.len());
     };
@@ -118,9 +121,20 @@ function loadTexture(url) {
     return texture;
 }
 // var context:any = canvas.getContext('2d');
+var directions = [new vec(0, 1), new vec(0, -1), new vec(-1, 0), new vec(1, 0)];
 var player = /** @class */ (function () {
     function player() {
         this.pos = new vec(10, 980);
+        this.hp = 1000;
+        this.items = [1, 0, 0, 0,
+            0, 0, 0, 0,
+            1, 0, 0, 0,
+            0, 1, 0, 0];
+        this.dir = 0;
+        this.hlen = 0;
+        this.name = "loading...";
+        this.maini = 0;
+        this.offi = 1;
     }
     return player;
 }());
@@ -129,6 +143,32 @@ var vertbuf = /** @class */ (function () {
     function vertbuf() {
     }
     return vertbuf;
+}());
+var chest = /** @class */ (function () {
+    function chest(pos, id) {
+        this.pos = pos;
+        this.id = id;
+    }
+    return chest;
+}());
+var shad = /** @class */ (function () {
+    function shad(v, f) {
+        var vertShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertShader, loadtxt(v, 'text/plain'));
+        gl.compileShader(vertShader);
+        var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragShader, loadtxt(f, 'text/plain'));
+        gl.compileShader(fragShader);
+        this.prog = gl.createProgram();
+        gl.attachShader(this.prog, vertShader);
+        gl.attachShader(this.prog, fragShader);
+        gl.linkProgram(this.prog);
+        gl.deleteShader(vertShader);
+        gl.deleteShader(fragShader);
+        gl.detachShader(this.prog, vertShader);
+        gl.detachShader(this.prog, fragShader);
+    }
+    return shad;
 }());
 var gamestate = /** @class */ (function () {
     function gamestate() {
@@ -161,22 +201,24 @@ var gamestate = /** @class */ (function () {
         // gl.vertexAttribPointer(1, 2, gl.FLOAT, false, sizeof(1.1)*4, sizeof(1.1)*2);
         // gl.enableVertexAttribArray(1);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        var vertShader = gl.createShader(gl.VERTEX_SHADER);
-        gl.shaderSource(vertShader, loadtxt('static/world.vert', 'text/plain'));
-        gl.compileShader(vertShader);
-        var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fragShader, loadtxt('static/world.frag', 'text/plain'));
-        gl.compileShader(fragShader);
-        this.shader = gl.createProgram();
-        gl.attachShader(this.shader, vertShader);
-        gl.attachShader(this.shader, fragShader);
-        gl.linkProgram(this.shader);
-        gl.deleteShader(vertShader);
-        gl.deleteShader(fragShader);
-        gl.detachShader(this.shader, vertShader);
-        gl.detachShader(this.shader, fragShader);
+        this.shader = new shad('static/world.vert', 'static/world.frag');
+        this.tshader = new shad('static/world.vert', 'static/transparent.frag');
         this.update();
         this.tex = loadTexture('static/test.png');
+        this.chesttex = loadTexture('static/chest.png');
+        this.ochestvbo = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.ochestvbo);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1.01, 0.99, 1, 0, 1.99, 0.99, 0, 1, 1.01, 0.01, 1, 1, 1.99, 0.01, 1, 0, 1.99, 0.99, 0, 1, 1.01, 0.01]), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        this.cchestvbo = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.cchestvbo);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0.01, 0.99, 1, 0, 0.99, 0.99, 0, 1, 0.01, 0.01, 1, 1, 0.99, 0.01, 1, 0, 0.99, 0.99, 0, 1, 0.01, 0.01]), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        for (var i = 0; i < js["hpaths"].length; i++)
+            this.level.s(js["hpaths"][i]["x"] + 1, js["hpaths"][i]["y"], 1);
+        this.chests = [];
+        for (var i = 0; i < js["chests"].length; i++)
+            this.chests.push(new chest(new vec(js["chests"][i]["x"] + 1, js["chests"][i]["y"]), js["chests"][i]["id"]));
     }
     gamestate.prototype.update = function () {
         for (var it = 0; it < 50; it++)
@@ -186,34 +228,82 @@ var gamestate = /** @class */ (function () {
                     for (var j = 1 + jt * 20; j < 1 + (jt + 1) * 20; j++) {
                         var o = 5;
                         if (this.level.g(i, j) > 0)
-                            o = 10;
-                        else if (this.level.g(i + 1, j) > 0 && this.level.g(i, j + 1) > 0 && this.level.g(i - 1, j) > 0 && this.level.g(i, j - 1) > 0)
+                            o = 14;
+                        else if (this.level.g(i, j) == 0) {
+                            if (this.level.g(i + 1, j) != 0 && this.level.g(i, j + 1) != 0 && this.level.g(i - 1, j) != 0 && this.level.g(i, j - 1) != 0)
+                                o = 5;
+                            else if (this.level.g(i + 1, j) != 0 && !(this.level.g(i - 1, j) != 0 || ((this.level.g(i, j + 1) != 0) != (this.level.g(i, j - 1) != 0))))
+                                o = 4;
+                            else if (this.level.g(i - 1, j) != 0 && !(this.level.g(i + 1, j) != 0 || ((this.level.g(i, j + 1) != 0) != (this.level.g(i, j - 1) != 0))))
+                                o = 3;
+                            else if (this.level.g(i, j + 1) != 0 && !(this.level.g(i, j - 1) != 0 || ((this.level.g(i + 1, j) != 0) != (this.level.g(i - 1, j) != 0))))
+                                o = 2;
+                            else if (this.level.g(i, j - 1) != 0 && !(this.level.g(i, j + 1) != 0 || ((this.level.g(i + 1, j) != 0) != (this.level.g(i - 1, j) != 0))))
+                                o = 1;
+                            else if ((this.level.g(i, j - 1) != 0) == (this.level.g(i, j + 1) != 0) && (this.level.g(i - 1, j) != 0) == (this.level.g(i + 1, j) != 0) && (this.level.g(i, j - 1) != 0) != (this.level.g(i - 1, j) != 0))
+                                o = 0;
+                            else if (this.level.g(i + 1, j) != 0 || this.level.g(i - 1, j) != 0 || this.level.g(i, j + 1) != 0 || this.level.g(i, j - 1) != 0) {
+                                if (this.level.g(i + 1, j) != 0 && this.level.g(i, j + 1) != 0 && !(this.level.g(i, j - 1) != 0 || this.level.g(i - 1, j) != 0))
+                                    o = 13;
+                                else if (this.level.g(i - 1, j) != 0 && this.level.g(i, j + 1) != 0 && !(this.level.g(i, j - 1) != 0 || this.level.g(i + 1, j) != 0))
+                                    o = 12;
+                                else if (this.level.g(i + 1, j) != 0 && this.level.g(i, j - 1) != 0 && !(this.level.g(i, j + 1) != 0 || this.level.g(i - 1, j) != 0))
+                                    o = 11;
+                                else if (this.level.g(i - 1, j) != 0 && this.level.g(i, j - 1) != 0 && !(this.level.g(i, j + 1) != 0 || this.level.g(i + 1, j) != 0))
+                                    o = 10;
+                                else
+                                    o = 5;
+                            }
+                            else if ((((this.level.g(i + 1, j + 1) != 0) ? 1 : 0) + ((this.level.g(i - 1, j + 1) != 0) ? 1 : 0) + ((this.level.g(i + 1, j - 1) != 0) ? 1 : 0) + ((this.level.g(i - 1, j - 1) != 0) ? 1 : 0)) > 1)
+                                o = 5;
+                            else if (this.level.g(i + 1, j + 1) != 0)
+                                o = 6;
+                            else if (this.level.g(i - 1, j + 1) != 0)
+                                o = 7;
+                            else if (this.level.g(i + 1, j - 1) != 0)
+                                o = 8;
+                            else if (this.level.g(i - 1, j - 1) != 0)
+                                o = 9;
+                            else
+                                o = 0;
+                        }
+                        else if (this.level.g(i + 1, j) >= 0 && this.level.g(i, j + 1) >= 0 && this.level.g(i - 1, j) >= 0 && this.level.g(i, j - 1) >= 0)
                             o = 5;
-                        else if (this.level.g(i + 1, j) > 0 && !(this.level.g(i - 1, j) > 0 || ((this.level.g(i, j + 1) > 0) != (this.level.g(i, j - 1) > 0))))
+                        else if (this.level.g(i + 1, j) >= 0 && !(this.level.g(i - 1, j) >= 0 || ((this.level.g(i, j + 1) >= 0) != (this.level.g(i, j - 1) >= 0))))
                             o = 4;
-                        else if (this.level.g(i - 1, j) > 0 && !(this.level.g(i + 1, j) > 0 || ((this.level.g(i, j + 1) > 0) != (this.level.g(i, j - 1) > 0))))
+                        else if (this.level.g(i - 1, j) >= 0 && !(this.level.g(i + 1, j) >= 0 || ((this.level.g(i, j + 1) >= 0) != (this.level.g(i, j - 1) >= 0))))
                             o = 3;
-                        else if (this.level.g(i, j + 1) > 0 && !(this.level.g(i, j - 1) > 0 || ((this.level.g(i + 1, j) > 0) != (this.level.g(i - 1, j) > 0))))
+                        else if (this.level.g(i, j + 1) >= 0 && !(this.level.g(i, j - 1) >= 0 || ((this.level.g(i + 1, j) >= 0) != (this.level.g(i - 1, j) >= 0))))
                             o = 2;
-                        else if (this.level.g(i, j - 1) > 0 && !(this.level.g(i, j + 1) > 0 || ((this.level.g(i + 1, j) > 0) != (this.level.g(i - 1, j) > 0))))
+                        else if (this.level.g(i, j - 1) >= 0 && !(this.level.g(i, j + 1) >= 0 || ((this.level.g(i + 1, j) >= 0) != (this.level.g(i - 1, j) >= 0))))
                             o = 1;
-                        else if ((this.level.g(i, j - 1) > 0) == (this.level.g(i, j + 1) > 0) && (this.level.g(i - 1, j) > 0) == (this.level.g(i + 1, j) > 0) && (this.level.g(i, j - 1) > 0) != (this.level.g(i - 1, j) > 0))
+                        else if ((this.level.g(i, j - 1) >= 0) == (this.level.g(i, j + 1) >= 0) && (this.level.g(i - 1, j) >= 0) == (this.level.g(i + 1, j) >= 0) && (this.level.g(i, j - 1) >= 0) != (this.level.g(i - 1, j) >= 0))
                             o = 0;
-                        else if (this.level.g(i + 1, j) > 0 || this.level.g(i - 1, j) > 0 || this.level.g(i, j + 1) > 0 || this.level.g(i, j - 1) > 0)
+                        else if (this.level.g(i + 1, j) >= 0 || this.level.g(i - 1, j) >= 0 || this.level.g(i, j + 1) >= 0 || this.level.g(i, j - 1) >= 0) {
+                            if (this.level.g(i + 1, j) >= 0 && this.level.g(i, j + 1) >= 0 && !(this.level.g(i, j - 1) >= 0 || this.level.g(i - 1, j) >= 0))
+                                o = 13;
+                            else if (this.level.g(i - 1, j) >= 0 && this.level.g(i, j + 1) >= 0 && !(this.level.g(i, j - 1) >= 0 || this.level.g(i + 1, j) >= 0))
+                                o = 12;
+                            else if (this.level.g(i + 1, j) >= 0 && this.level.g(i, j - 1) >= 0 && !(this.level.g(i, j + 1) >= 0 || this.level.g(i - 1, j) >= 0))
+                                o = 11;
+                            else if (this.level.g(i - 1, j) >= 0 && this.level.g(i, j - 1) >= 0 && !(this.level.g(i, j + 1) >= 0 || this.level.g(i + 1, j) >= 0))
+                                o = 10;
+                            else
+                                o = 5;
+                        }
+                        else if ((((this.level.g(i + 1, j + 1) >= 0) ? 1 : 0) + ((this.level.g(i - 1, j + 1) >= 0) ? 1 : 0) + ((this.level.g(i + 1, j - 1) >= 0) ? 1 : 0) + ((this.level.g(i - 1, j - 1) >= 0) ? 1 : 0)) > 1)
                             o = 5;
-                        else if ((((this.level.g(i + 1, j + 1) > 0) ? 1 : 0) + ((this.level.g(i - 1, j + 1) > 0) ? 1 : 0) + ((this.level.g(i + 1, j - 1) > 0) ? 1 : 0) + ((this.level.g(i - 1, j - 1) > 0) ? 1 : 0)) > 1)
-                            o = 5;
-                        else if (this.level.g(i + 1, j + 1) > 0)
+                        else if (this.level.g(i + 1, j + 1) >= 0)
                             o = 6;
-                        else if (this.level.g(i - 1, j + 1) > 0)
+                        else if (this.level.g(i - 1, j + 1) >= 0)
                             o = 7;
-                        else if (this.level.g(i + 1, j - 1) > 0)
+                        else if (this.level.g(i + 1, j - 1) >= 0)
                             o = 8;
-                        else if (this.level.g(i - 1, j - 1) > 0)
+                        else if (this.level.g(i - 1, j - 1) >= 0)
                             o = 9;
                         else
                             o = 0;
-                        var id = Math.abs(this.level.g(i, j)) - 1;
+                        var id = Math.abs(this.level.g(i, j));
                         data.push(i);
                         data.push(j);
                         data.push(o + 0.01);
@@ -246,16 +336,16 @@ var gamestate = /** @class */ (function () {
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
     };
     gamestate.prototype.render = function () {
-        gl.useProgram(this.shader);
+        gl.useProgram(this.shader.prog);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.tex);
-        gl.uniform2f(gl.getUniformLocation(this.shader, 'off'), -pl.pos.x, -pl.pos.y);
-        gl.uniform2f(gl.getUniformLocation(gmst.shader, 'scl'), (1 / 10) * (canvas.height / canvas.width), 1 / 10);
-        gl.uniform2i(gl.getUniformLocation(this.shader, 'spnum'), 11, 2);
-        var stop = pl.pos.y - 11;
-        var sbottom = pl.pos.y + 11;
-        var sleft = pl.pos.x - 11 / (canvas.height / canvas.width);
-        var sright = pl.pos.x + 11 / (canvas.height / canvas.width);
+        gl.uniform2f(gl.getUniformLocation(this.shader.prog, 'off'), -pl.pos.x, -pl.pos.y);
+        gl.uniform2f(gl.getUniformLocation(this.shader.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
+        gl.uniform2i(gl.getUniformLocation(this.shader.prog, 'spnum'), 15, 3);
+        var stop = pl.pos.y - 13;
+        var sbottom = pl.pos.y + 13;
+        var sleft = pl.pos.x - 13 / (canvas.height / canvas.width);
+        var sright = pl.pos.x + 13 / (canvas.height / canvas.width);
         for (var i = 0; i < 50; i++)
             for (var j = 0; j < 50; j++) {
                 if (!(i * 20 > sright ||
@@ -263,7 +353,7 @@ var gamestate = /** @class */ (function () {
                     j * 20 > sbottom ||
                     (j + 1) * 20 < stop)) {
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.chunks.g(i, j).vbo);
-                    var t = gl.getUniformLocation(this.shader, 'i');
+                    var t = gl.getUniformLocation(this.shader.prog, 'i');
                     gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
                     gl.enableVertexAttribArray(t);
                     // gl.vertexAttribPointer(t2, 2, gl.FLOAT, false, 8*4, 8*2);
@@ -271,12 +361,55 @@ var gamestate = /** @class */ (function () {
                     gl.drawArrays(gl.TRIANGLES, 0, this.chunks.g(i, j).vsize);
                 }
             }
+        gl.useProgram(this.tshader.prog);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.chesttex);
+        gl.uniform2f(gl.getUniformLocation(this.tshader.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
+        gl.uniform2i(gl.getUniformLocation(this.tshader.prog, 'spnum'), 2, 1);
+        for (var i = 0; i < this.chests.length; i++) {
+            var x = this.chests[i].pos.x;
+            var y = this.chests[i].pos.y;
+            if (!(x > sright ||
+                (x + 1) < sleft ||
+                y > sbottom ||
+                (y + 1) < stop)) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, (this.chests[i].id > 0) ? this.cchestvbo : this.ochestvbo);
+                var t = gl.getUniformLocation(this.tshader.prog, 'i');
+                gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(t);
+                gl.uniform2f(gl.getUniformLocation(this.tshader.prog, 'off'), x - pl.pos.x, y - pl.pos.y);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+            }
+        }
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.useProgram(null);
     };
     return gamestate;
 }());
 var gmst = new gamestate();
+socket.emit('n');
+setInterval(function () {
+    socket.emit('u', pl);
+}, 1000 / 30);
+var oplayers;
+socket.on('s', function (players) {
+    oplayers = players;
+});
+var chatelements = [document.getElementById('ctxt0'), document.getElementById('ctxt1'), document.getElementById('ctxt2'), document.getElementById('ctxt3'), document.getElementById('ctxt4')];
+socket.on('c', function (message) {
+    for (var i = 4; i > 0; i--) {
+        chatelements[i].innerHTML = chatelements[i - 1].innerHTML;
+    }
+    chatelements[0].innerHTML = message;
+});
+socket.on('chg', function (ch) {
+    for (var i in pl.items) {
+        if (pl.items[i] == 0) {
+            pl.items[i] = ch['v'];
+            break;
+        }
+    }
+});
 var keys = {
     up: false,
     down: false,
@@ -284,9 +417,7 @@ var keys = {
     right: false,
     main: false,
     off: false,
-    block: false,
-    inv: false,
-    friend: false
+    inv: false
 };
 var pkeys = {
     up: false,
@@ -295,9 +426,7 @@ var pkeys = {
     right: false,
     main: false,
     off: false,
-    block: false,
-    inv: false,
-    friend: false
+    inv: false
 };
 var isMobile = !!(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
 var ongoingTouches = [];
@@ -334,10 +463,6 @@ else {
                 if (!event.repeat)
                     keys.main = true;
                 break;
-            case 32: // X
-                if (!event.repeat)
-                    keys.block = true;
-                break;
             case 88:
                 if (!event.repeat)
                     keys.off = true;
@@ -345,10 +470,6 @@ else {
             case 67:
                 if (!event.repeat)
                     keys.inv = true;
-                break;
-            case 70:
-                if (!event.repeat)
-                    keys.friend = true;
                 break;
         }
     });
@@ -374,10 +495,6 @@ else {
                 if (!event.repeat)
                     keys.main = false;
                 break;
-            case 32: // X
-                if (!event.repeat)
-                    keys.block = false;
-                break;
             case 88:
                 if (!event.repeat)
                     keys.off = false;
@@ -386,19 +503,175 @@ else {
                 if (!event.repeat)
                     keys.inv = false;
                 break;
-            case 70:
-                if (!event.repeat)
-                    keys.friend = false;
-                break;
         }
     });
 }
+function createButton(func, style, v) {
+    if (v === void 0) { v = ""; }
+    var button = document.createElement("input");
+    button.type = "button";
+    button.value = v;
+    button.onclick = func;
+    button.style = style;
+    document.body.appendChild(button);
+    return button;
+}
+function createButtoni(func, style) {
+    var button = document.createElement("input");
+    button.type = "image";
+    button.onclick = func;
+    button.alt = 'an item button';
+    button.value = ' ';
+    button.src = " ";
+    button.style = style;
+    document.body.appendChild(button);
+    return button;
+}
+var invfocus = -1;
+var itemgraphics = ["static/nullitem.png", "static/hookshot.png"];
+var invdisp = [
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 0;
+    else {
+        var t = pl.items[0];
+        pl.items[0] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 32px; top: 32px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 1;
+    else {
+        var t = pl.items[1];
+        pl.items[1] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 102px; top: 32px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 2;
+    else {
+        var t = pl.items[2];
+        pl.items[2] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 172px; top: 32px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 3;
+    else {
+        var t = pl.items[3];
+        pl.items[3] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 242px; top: 32px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 4;
+    else {
+        var t = pl.items[4];
+        pl.items[4] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 32px; top: 102px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 5;
+    else {
+        var t = pl.items[5];
+        pl.items[5] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 102px; top: 102px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 6;
+    else {
+        var t = pl.items[6];
+        pl.items[6] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 172px; top: 102px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 7;
+    else {
+        var t = pl.items[7];
+        pl.items[7] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 242px; top: 102px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 8;
+    else {
+        var t = pl.items[8];
+        pl.items[8] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 32px; top: 172px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 9;
+    else {
+        var t = pl.items[9];
+        pl.items[9] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 102px; top: 172px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 10;
+    else {
+        var t = pl.items[10];
+        pl.items[10] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 172px; top: 172px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 11;
+    else {
+        var t = pl.items[11];
+        pl.items[11] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 242px; top: 172px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 12;
+    else {
+        var t = pl.items[12];
+        pl.items[12] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 32px; top: 242px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 13;
+    else {
+        var t = pl.items[13];
+        pl.items[13] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 102px; top: 242px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 14;
+    else {
+        var t = pl.items[14];
+        pl.items[14] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 172px; top: 242px;width:64px; height:64px;"),
+    createButtoni(function () { if (invfocus == -1)
+        invfocus = 15;
+    else {
+        var t = pl.items[15];
+        pl.items[15] = pl.items[invfocus];
+        pl.items[invfocus] = t;
+        invfocus = -1;
+    } }, "outline:6px solid black;position: absolute; left: 242px; top: 242px;width:64px; height:64px;")
+];
+var trashbutton = createButtoni(function () { if (invfocus != -1) {
+    pl.items[invfocus] = 0;
+    invfocus = -1;
+} }, "position: absolute; left: 32px; top: 312px;width:64px; height:64px;");
+trashbutton.src = "static/trash.png";
+//var givebutton:any = createButton(function(){pl.maini=3},"position: absolute; left: 128px; top: 112px;","give");
 var spsize = 64;
 var lastUpdateTime = performance.now();
 var plvbo = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0]), gl.STATIC_DRAW);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-0.5, -0.5, 0.01, 0.01, 0.5, -0.5, 0.99, 0.01, -0.5, 0.5, 0.01, 0.99, 0.5, 0.5, 0.99, 0.99, 0.5, -0.5, 0.99, 0.01, -0.5, 0.5, 0.01, 0.99]), gl.STATIC_DRAW);
 gl.bindBuffer(gl.ARRAY_BUFFER, null);
+var dynshad = new shad('static/dynamic.vert', 'static/transparent.frag');
 function updatefunc() {
     var currentTime = performance.now();
     var dt = (currentTime - lastUpdateTime) / 1000.0;
@@ -411,72 +684,200 @@ function updatefunc() {
         gl.clearColor(0.23137, 0.23137, 0.23137, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
         gmst.render();
-        gl.useProgram(gmst.shader);
+        gl.useProgram(dynshad.prog);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, gmst.chesttex);
         gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
-        var t = gl.getUniformLocation(gmst.shader, 'i');
+        var t = gl.getUniformLocation(dynshad.prog, 'i');
         gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(t);
-        gl.uniform2f(gl.getUniformLocation(gmst.shader, 'off'), -0.5, -0.5);
-        gl.uniform2f(gl.getUniformLocation(gmst.shader, 'scl'), (1 / 10) * (canvas.height / canvas.width), 1 / 10);
-        gl.uniform2i(gl.getUniformLocation(gmst.shader, 'spnum'), 11, 2);
+        gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), 0, 0);
+        gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
+        gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 2, 1);
+        gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 1, 1);
+        gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), Math.PI / 2);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        gl.useProgram(null);
-    }
-    var v = new vec(0, 0);
-    if (isMobile) {
-        for (var i = 0; i < ongoingTouches.length; i += 1) {
-            if (ongoingTouches[i].pageX < canvas.width / 2) {
-                v = v.add(new vec(ongoingTouches[i].pageX - canvas.width / 4, -(ongoingTouches[i].pageY - canvas.height / 2)));
+        for (var id in oplayers) {
+            if (id != socket.id) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
+                var t_1 = gl.getUniformLocation(dynshad.prog, 'i');
+                gl.vertexAttribPointer(t_1, 4, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(t_1);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), oplayers[id].pos.x - pl.pos.x, oplayers[id].pos.y - pl.pos.y);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
+                gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 2, 1);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 1, 1);
+                gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), Math.PI * 1.5);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+                gl.bindBuffer(gl.ARRAY_BUFFER, null);
             }
         }
+        if (pl.hlen >= 0.1) {
+            gl.useProgram(dynshad.prog);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, gmst.chesttex);
+            gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
+            var t_2 = gl.getUniformLocation(dynshad.prog, 'i');
+            gl.vertexAttribPointer(t_2, 4, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(t_2);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), pl.hlen * directions[pl.dir].x, pl.hlen * directions[pl.dir].y);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
+            gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 2, 1);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 0.3, 0.3);
+            gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), 0);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        }
+        gl.useProgram(null);
+    }
+    for (var i = 0; i < invdisp.length; i++) {
+        if (i == invfocus) {
+            invdisp[i].style.zIndex = 101;
+            invdisp[i].style.outlineColor = 'red';
+        }
+        else {
+            invdisp[i].style.zIndex = 100;
+            invdisp[i].style.outlineColor = 'black';
+        }
+        invdisp[i].src = itemgraphics[pl.items[i]];
+    }
+    var v = new vec(0, 0);
+    if (pl.hlen < 0.1) {
+        if (isMobile) {
+            for (var i = 0; i < ongoingTouches.length; i += 1) {
+                if (ongoingTouches[i].pageX < canvas.width / 2) {
+                    v = v.add(new vec(ongoingTouches[i].pageX - canvas.width / 4, -(ongoingTouches[i].pageY - canvas.height / 2)));
+                }
+            }
+        }
+        else {
+            if (keys.up)
+                v.y++;
+            if (keys.down)
+                v.y--;
+            if (keys.left)
+                v.x--;
+            if (keys.right)
+                v.x++;
+            if (keys.main && !pkeys.main) {
+                if (pl.items[0] == 1) {
+                    pl.hlen = 0.5;
+                }
+            }
+            if (keys.off && !pkeys.off) {
+                if (pl.items[1] == 1) {
+                    pl.hlen = 0.5;
+                }
+            }
+        }
+        if (v.lensq() > 0.1) {
+            v = v.norm();
+            if (v.dot(directions[2]) > v.dot(directions[0]) - 0.01 && v.dot(directions[2]) > v.dot(directions[1]) - 0.01 && v.dot(directions[2]) > v.dot(directions[3]) - 0.01)
+                pl.dir = 2;
+            if (v.dot(directions[3]) > v.dot(directions[0]) - 0.01 && v.dot(directions[3]) > v.dot(directions[1]) - 0.01 && v.dot(directions[3]) > v.dot(directions[2]) - 0.01)
+                pl.dir = 3;
+            if (v.dot(directions[0]) > v.dot(directions[1]) - 0.01 && v.dot(directions[0]) > v.dot(directions[2]) - 0.01 && v.dot(directions[0]) > v.dot(directions[3]) - 0.01)
+                pl.dir = 0;
+            if (v.dot(directions[1]) > v.dot(directions[0]) - 0.01 && v.dot(directions[1]) > v.dot(directions[2]) - 0.01 && v.dot(directions[1]) > v.dot(directions[3]) - 0.01)
+                pl.dir = 1;
+            v = v.smul(dt * 8);
+        }
+        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y)) == 0) {
+            pl = new player();
+        }
+        var t = false;
+        for (var i in pl.items)
+            if (pl.items[i] == 0)
+                t = true;
+        if (t)
+            for (var c in gmst.chests) {
+                if (gmst.chests[c].id > 0) {
+                    if (Math.floor(pl.pos.x) == gmst.chests[c].pos.x && Math.floor(pl.pos.y) == gmst.chests[c].pos.y) {
+                        socket.emit('ch', { 'id': c, 'v': gmst.chests[c].id }, socket.id);
+                        gmst.chests[c].id = -gmst.chests[c].id;
+                    }
+                }
+            }
     }
     else {
-        if (keys.up)
-            v.y++;
-        if (keys.down)
-            v.y--;
-        if (keys.left)
-            v.x--;
-        if (keys.right)
-            v.x++;
+        var p = pl.pos.add(directions[pl.dir].smul(pl.hlen));
+        if (gmst.level.g(Math.floor(p.x), Math.floor(p.y)) < 0) {
+            v.x = directions[pl.dir].x * 15 * dt;
+            v.y = directions[pl.dir].y * 15 * dt;
+            pl.hlen -= dt * 15;
+        }
+        else {
+            var steps_1 = Math.ceil(dt * 40 + 0.1);
+            for (var i = 0; i < steps_1; i++) {
+                pl.hlen += 20 * (dt / steps_1);
+                p = pl.pos.add(directions[pl.dir].smul(pl.hlen));
+                if (gmst.level.g(Math.floor(p.x), Math.floor(p.y)) < 0) {
+                    break;
+                }
+            }
+        }
+        if (pl.hlen > 10)
+            pl.hlen = 0;
     }
-    if (v.lensq() > 0.1)
-        v = v.norm().smul(dt * 8);
     var steps = Math.ceil(v.len() * 2.0 + 0.1);
     var va = v.sdiv(steps);
-    for (var i_1 = 0; i_1 < steps; i_1++) {
+    var b = false;
+    for (var i = 0; i < steps; i++) {
         pl.pos = pl.pos.add(va);
-        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y)) <= 0)
+        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y)) < 0) {
             pl.pos.x = Math.floor(pl.pos.x) + 0.505;
-        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y)) <= 0)
+            b = true;
+        }
+        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y)) < 0) {
             pl.pos.x = Math.floor(pl.pos.x) + 0.495;
-        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y + 0.495)) <= 0)
+            b = true;
+        }
+        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y + 0.495)) < 0) {
             pl.pos.y = Math.floor(pl.pos.y) + 0.495;
-        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y - 0.495)) <= 0)
+            b = true;
+        }
+        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y - 0.495)) < 0) {
             pl.pos.y = Math.floor(pl.pos.y) + 0.505;
-        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y - 0.495)) <= 0)
+            b = true;
+        }
+        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y - 0.495)) < 0) {
             if (Math.abs(pl.pos.y - (Math.floor(pl.pos.y) + 0.5)) < Math.abs(pl.pos.x - (Math.floor(pl.pos.x) + 0.5)))
                 pl.pos.y = Math.floor(pl.pos.y) + 0.505;
             else
                 pl.pos.x = Math.floor(pl.pos.x) + 0.505;
-        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y - 0.495)) <= 0)
+            b = true;
+        }
+        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y - 0.495)) < 0) {
             if (Math.abs(pl.pos.y - (Math.floor(pl.pos.y) + 0.5)) < Math.abs(pl.pos.x - (Math.floor(pl.pos.x) + 0.5)))
                 pl.pos.y = Math.floor(pl.pos.y) + 0.505;
             else
                 pl.pos.x = Math.floor(pl.pos.x) + 0.495;
-        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y + 0.495)) <= 0)
+            b = true;
+        }
+        if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y + 0.495)) < 0) {
             if (Math.abs(pl.pos.y - (Math.floor(pl.pos.y) + 0.5)) < Math.abs(pl.pos.x - (Math.floor(pl.pos.x) + 0.5)))
                 pl.pos.y = Math.floor(pl.pos.y) + 0.495;
             else
                 pl.pos.x = Math.floor(pl.pos.x) + 0.505;
-        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y + 0.495)) <= 0)
+            b = true;
+        }
+        if (gmst.level.g(Math.floor(pl.pos.x + 0.495), Math.floor(pl.pos.y + 0.495)) < 0) {
             if (Math.abs(pl.pos.y - (Math.floor(pl.pos.y) + 0.5)) < Math.abs(pl.pos.x - (Math.floor(pl.pos.x) + 0.5)))
                 pl.pos.y = Math.floor(pl.pos.y) + 0.495;
             else
                 pl.pos.x = Math.floor(pl.pos.x) + 0.495;
+            b = true;
+        }
+        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y)) < 0) {
+            pl.pos.y += 0.5;
+        }
     }
-    pkeys = keys;
+    if (b) {
+        pl.hlen = 0;
+    }
+    pkeys = Object.assign({}, keys);
+    ;
     lastUpdateTime = currentTime;
     requestAnimationFrame(updatefunc);
 }

@@ -4,19 +4,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>fdx</title>
     <style>
-        canvas {
+        canvas,canvas2d {
             width: 100%;
             height: 100%;
+            position: absolute;
+            left: 0px; bottom: 0px;
         }
-        html { overflow-y: hidden; }
-        html,
-        body {
+        canvas{
+          z-index: -1;
+        }
+        canvas2d{
+          z-index: 0;
+        }
+        html,body {
+          overflow-y: hidden;
           overflow-x: hidden;
           height: 100%;
         }
 
         body {
           position: relative;
+          margin:0;padding: 0;
         }
 
     </style>
@@ -25,8 +33,15 @@
 <body>
 
     <canvas id="canvas"></canvas>
-   <input type="text" id="chatbox" name="chatbox" style="position: absolute; z-index: 1; left: 8px; bottom: 38px; font-size:14px;height:14px;width:100px;">
-	<input onclick="socket.emit('chat',mee.name+':'+document.getElementById('chatbox').value);" type="submit" value="OK" style="position: absolute; z-index: 1; left: 108px;font-size:14px; bottom: 38px; width:50px; height:34px;">
+    <canvas id="canvas2d"></canvas>
+   <input type="text" id="chatbox" name="chatbox" style="position: absolute; z-index: 1; left: 8px; bottom: 16px; font-size:14px;height:14px;width:100px;">
+	<input onclick="socket.emit('chat','< ' + pl.name + ' > :'+document.getElementById('chatbox').value);document.getElementById('chatbox').value='';" type="submit" value="OK" style="position: absolute; z-index: 1; left: 108px;font-size:14px; bottom: 16px; width:50px; height:34px;">
+  <p id="ctxt0" style=" bolder;position: absolute; left: 8px; bottom: 48px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;" ></p>
+  <p id="ctxt1" style=" bolder;position: absolute; left: 8px; bottom: 64px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;"></p>
+  <p id="ctxt2" style=" bolder;position: absolute; left: 8px; bottom: 80px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;"></p>
+  <p id="ctxt3" style=" bolder;position: absolute; left: 8px; bottom: 96px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;"></p>
+  <p id="ctxt4" style=" bolder;position: absolute; left: 8px; bottom: 112px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;"></p>
+
 
 
 
