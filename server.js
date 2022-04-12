@@ -31,12 +31,15 @@ var players = {};
 
 var openedchests = {};
 
+
+function distsq(a,b){
+  return a.x*b.x+a.y*b.y;
+}
+
 io.on('connection', function(socket) {
 
-  socket.on('n', function() {
-    players[socket.id] = {
-      pos:{'x':0,'y':0},hp:0,
-    };
+  socket.on('n', function(pl) {
+    players[socket.id] = pl;
   });
   socket.on('chat', function(message) {
     io.sockets.emit('c',message);
@@ -48,6 +51,17 @@ io.on('connection', function(socket) {
     }
 
   });
+  socket.on('atk', function(dmg,to,from) {
+      io.sockets.to(to).emit('dmg',dmg,from);
+  });
+  socket.on('pt', function(to,from) {
+      io.sockets.emit('c','\"'+players[from].name+'\"' + ' was defeated by \"' + players[to].name+'\"');
+      io.sockets.to(to).emit('point');
+
+  });
+  socket.on('sw', function(from) {
+      io.sockets.emit('swanim',from);
+  });
   socket.on('u', function(data) {
     players[socket.id] = data;
   });
@@ -55,6 +69,11 @@ io.on('connection', function(socket) {
     delete players[socket.id];
   });
 });
+setInterval(function() {
+  openedchests = {};
+  io.sockets.emit('chr', players);
+  io.sockets.emit('c', "CHEST RESET");
+}, 10*60*1000);
 
 setInterval(function() {
   io.sockets.emit('s', players);

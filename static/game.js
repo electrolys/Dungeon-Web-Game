@@ -122,23 +122,117 @@ function loadTexture(url) {
 }
 // var context:any = canvas.getContext('2d');
 var directions = [new vec(0, 1), new vec(0, -1), new vec(-1, 0), new vec(1, 0)];
+var dangles = [0, Math.PI, Math.PI * 0.5, Math.PI * 1.5];
 var player = /** @class */ (function () {
-    function player() {
+    function player(name, points) {
+        if (name === void 0) { name = "loading..."; }
+        if (points === void 0) { points = 0; }
         this.pos = new vec(10, 980);
-        this.hp = 1000;
-        this.items = [1, 0, 0, 0,
+        this.hp = 100;
+        // this.items=[1,0,0,13,
+        //             12,11,10,9,
+        //             1,6,7,8,
+        //             5,2,3,4];
+        this.items = [0, 0, 0, 0,
             0, 0, 0, 0,
-            1, 0, 0, 0,
-            0, 1, 0, 0];
+            0, 0, 0, 0,
+            0, 0, 0, 0];
         this.dir = 0;
         this.hlen = 0;
-        this.name = "loading...";
+        this.name = name;
         this.maini = 0;
         this.offi = 1;
+        this.swanim = -1;
+        this.stun = -1;
+        this.outfit = 0;
+        this.points = points;
+        this.team = null;
     }
+    player.prototype.checkdef = function () {
+        var t = 1;
+        switch (this.items[2]) {
+            case 7:
+                t += 0.3;
+                break;
+            case 8:
+                t += 0.6;
+                break;
+            case 9:
+                t += 1.0;
+                break;
+        }
+        switch (this.items[3]) {
+            case 7:
+                t += 0.3;
+                break;
+            case 8:
+                t += 0.6;
+                break;
+            case 9:
+                t += 1.0;
+                break;
+        }
+        return t;
+    };
+    player.prototype.checkspd = function () {
+        var t = 1;
+        switch (this.items[2]) {
+            case 10:
+                t += 0.2;
+                break;
+            case 11:
+                t += 0.4;
+                break;
+        }
+        switch (this.items[3]) {
+            case 10:
+                t += 0.2;
+                break;
+            case 11:
+                t += 0.4;
+                break;
+        }
+        return t;
+    };
+    player.prototype.checkreg = function () {
+        var t = 0;
+        switch (this.items[2]) {
+            case 12:
+                t += 1;
+                break;
+            case 13:
+                t += 3;
+                break;
+        }
+        switch (this.items[3]) {
+            case 12:
+                t += 1;
+                break;
+            case 13:
+                t += 3;
+                break;
+        }
+        return t;
+    };
     return player;
 }());
-var pl = new player();
+var pl = new player(prompt("Enter a name", ""));
+if (pl.name == "") {
+    switch (Math.floor(Math.random() * 3)) {
+        case 0:
+            pl.name = "I have no name :(";
+            break;
+        case 1:
+            pl.name = "A person that didn't input a name";
+            break;
+        case 2:
+            pl.name = "My mind is blank";
+            break;
+        default:
+            pl.name = "Hmmm this name should've been impossible to get randomly";
+            break;
+    }
+}
 var vertbuf = /** @class */ (function () {
     function vertbuf() {
     }
@@ -204,8 +298,8 @@ var gamestate = /** @class */ (function () {
         this.shader = new shad('static/world.vert', 'static/world.frag');
         this.tshader = new shad('static/world.vert', 'static/transparent.frag');
         this.update();
-        this.tex = loadTexture('static/test.png');
-        this.chesttex = loadTexture('static/chest.png');
+        this.tex = loadTexture('static/img/tiles.png');
+        this.chesttex = loadTexture('static/img/chest.png');
         this.ochestvbo = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.ochestvbo);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1.01, 0.99, 1, 0, 1.99, 0.99, 0, 1, 1.01, 0.01, 1, 1, 1.99, 0.01, 1, 0, 1.99, 0.99, 0, 1, 1.01, 0.01]), gl.STATIC_DRAW);
@@ -387,21 +481,26 @@ var gamestate = /** @class */ (function () {
     return gamestate;
 }());
 var gmst = new gamestate();
-socket.emit('n');
+socket.emit('n', pl);
 setInterval(function () {
     socket.emit('u', pl);
 }, 1000 / 30);
 var oplayers;
+var opltemp = {};
 socket.on('s', function (players) {
     oplayers = players;
 });
 var chatelements = [document.getElementById('ctxt0'), document.getElementById('ctxt1'), document.getElementById('ctxt2'), document.getElementById('ctxt3'), document.getElementById('ctxt4')];
-socket.on('c', function (message) {
+var boardelements = [document.getElementById('board0'), document.getElementById('board1'), document.getElementById('board2'), document.getElementById('board3'), document.getElementById('board4')];
+var cnewtime = -1;
+function chat(message) {
     for (var i = 4; i > 0; i--) {
         chatelements[i].innerHTML = chatelements[i - 1].innerHTML;
     }
     chatelements[0].innerHTML = message;
-});
+    cnewtime = 1.5;
+}
+socket.on('c', chat);
 socket.on('chg', function (ch) {
     for (var i in pl.items) {
         if (pl.items[i] == 0) {
@@ -409,6 +508,27 @@ socket.on('chg', function (ch) {
             break;
         }
     }
+});
+socket.on('chr', function (ch) {
+    for (var i in gmst.chests)
+        gmst.chests[i].id = Math.abs(gmst.chests[i].id);
+});
+socket.on('dmg', function (dmg, from) {
+    if (pl.stun < 0.0) {
+        pl.stun = 1.7;
+        pl.hp -= dmg / pl.checkdef();
+        if (pl.hp <= 0) {
+            socket.emit('pt', from, socket.id);
+        }
+    }
+});
+socket.on('point', function () {
+    pl.points++;
+});
+socket.on('swanim', function (from) {
+    if (!opltemp[from])
+        opltemp[from] = {};
+    opltemp[from].swanim = 0.12;
 });
 var keys = {
     up: false,
@@ -430,6 +550,24 @@ var pkeys = {
 };
 var isMobile = !!(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
 var ongoingTouches = [];
+document.body.addEventListener('click', function (e) {
+    var plsizeh = 1 / 2;
+    var plsize = canvas.height / 12;
+    var x = (e.clientX - canvas.width / 2) / plsize + pl.pos.x;
+    var y = (e.clientY - canvas.height / 2) / plsize + pl.pos.y;
+    for (var i in oplayers) {
+        if (x > oplayers[i].pos.x - plsizeh && x < oplayers[i].pos.x + plsizeh && y > oplayers[i].pos.y - plsizeh && y < oplayers[i].pos.y + plsizeh) {
+            if (oplayers[i].team != null)
+                chat(oplayers[i].name + " on team: " + oplayers.team + " (" + oplayers[i].points + ")");
+            else
+                chat(oplayers[i].name + " (" + oplayers[i].points + ")");
+        }
+    }
+}, false);
+// document.body.addEventListener('contextmenu', function(e) {
+//   alert("You've tried to open context menu"); //here you draw your own menu
+//   e.preventDefault();
+// }, false);
 if (isMobile) {
     function handleStart(e) { ongoingTouches = e.touches; e.preventDefault(); }
     function handleEnd(e) { ongoingTouches = e.touches; }
@@ -528,7 +666,7 @@ function createButtoni(func, style) {
     return button;
 }
 var invfocus = -1;
-var itemgraphics = ["static/nullitem.png", "static/hookshot.png"];
+var itemgraphics = ["static/img/items/nullitem.png", "static/img/items/hookshot.png", "static/img/items/sword0.png", "static/img/items/sword1.png", "static/img/items/sword2.png", "static/img/items/sword3.png", "static/img/items/sword4.png", "static/img/items/armor0.png", "static/img/items/armor1.png", "static/img/items/armor2.png", "static/img/items/boots0.png", "static/img/items/boots1.png", "static/img/items/hat0.png", "static/img/items/hat1.png"];
 var invdisp = [
     createButtoni(function () { if (invfocus == -1)
         invfocus = 0;
@@ -537,7 +675,7 @@ var invdisp = [
         pl.items[0] = pl.items[invfocus];
         pl.items[invfocus] = t;
         invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 32px; top: 32px;width:64px; height:64px;"),
+    } }, "outline:6px solid green;position: absolute; left: 32px; top: 32px;width:64px; height:64px;"),
     createButtoni(function () { if (invfocus == -1)
         invfocus = 1;
     else {
@@ -545,7 +683,7 @@ var invdisp = [
         pl.items[1] = pl.items[invfocus];
         pl.items[invfocus] = t;
         invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 102px; top: 32px;width:64px; height:64px;"),
+    } }, "outline:6px solid green;position: absolute; left: 102px; top: 32px;width:64px; height:64px;"),
     createButtoni(function () { if (invfocus == -1)
         invfocus = 2;
     else {
@@ -553,7 +691,7 @@ var invdisp = [
         pl.items[2] = pl.items[invfocus];
         pl.items[invfocus] = t;
         invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 172px; top: 32px;width:64px; height:64px;"),
+    } }, "outline:6px solid blue;position: absolute; left: 172px; top: 32px;width:64px; height:64px;"),
     createButtoni(function () { if (invfocus == -1)
         invfocus = 3;
     else {
@@ -561,7 +699,7 @@ var invdisp = [
         pl.items[3] = pl.items[invfocus];
         pl.items[invfocus] = t;
         invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 242px; top: 32px;width:64px; height:64px;"),
+    } }, "outline:6px solid blue;position: absolute; left: 242px; top: 32px;width:64px; height:64px;"),
     createButtoni(function () { if (invfocus == -1)
         invfocus = 4;
     else {
@@ -663,18 +801,51 @@ var trashbutton = createButtoni(function () { if (invfocus != -1) {
     pl.items[invfocus] = 0;
     invfocus = -1;
 } }, "position: absolute; left: 32px; top: 312px;width:64px; height:64px;");
-trashbutton.src = "static/trash.png";
+trashbutton.src = "static/img/items/trash.png";
 //var givebutton:any = createButton(function(){pl.maini=3},"position: absolute; left: 128px; top: 112px;","give");
 var spsize = 64;
 var lastUpdateTime = performance.now();
+var hptext = document.getElementById('hp');
+var nametext = document.getElementById('name');
+var pointtext = document.getElementById('points');
+var teamtext = document.getElementById('team');
 var plvbo = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-0.5, -0.5, 0.01, 0.01, 0.5, -0.5, 0.99, 0.01, -0.5, 0.5, 0.01, 0.99, 0.5, 0.5, 0.99, 0.99, 0.5, -0.5, 0.99, 0.01, -0.5, 0.5, 0.01, 0.99]), gl.STATIC_DRAW);
 gl.bindBuffer(gl.ARRAY_BUFFER, null);
 var dynshad = new shad('static/dynamic.vert', 'static/transparent.frag');
+function trect(at, ab, al, ar, bt, bb, bl, br) {
+    return !(bl > ar ||
+        br < al ||
+        bb > at ||
+        bt < ab);
+}
+function sword(dmg) {
+    var v = pl.pos.add(directions[pl.dir].smul(1.5));
+    for (var i in oplayers) {
+        if (i != socket.id && trect(v.y + 2, v.y - 2, v.x - 2, v.x + 2, oplayers[i]["pos"]["y"] + 0.5, oplayers[i]["pos"]["y"] - 0.5, oplayers[i]["pos"]["x"] - 0.5, oplayers[i]["pos"]["x"] + 0.5)) {
+            if (oplayers[i].team == null || oplayers[i].team != pl.team)
+                socket.emit('atk', dmg, i, socket.id);
+        }
+    }
+    socket.emit('sw', socket.id);
+    pl.swanim = 0.12;
+}
+var swipetex = loadTexture('static/img/swipe.png');
+var pltextures = [loadTexture('static/img/pl/player0.png'), loadTexture('static/img/pl/armoredegg.png')];
+var stuneffect = 0;
+var regtime = 0;
 function updatefunc() {
     var currentTime = performance.now();
     var dt = (currentTime - lastUpdateTime) / 1000.0;
+    regtime += dt;
+    if (regtime > 3.0) {
+        pl.hp += pl.checkreg();
+        regtime -= 3.0;
+    }
+    if (pl.hp > 100) {
+        pl.hp = 100;
+    }
     {
         if (canvas.width != window.innerWidth || canvas.height != window.innerHeight) {
             canvas.width = window.innerWidth;
@@ -685,120 +856,271 @@ function updatefunc() {
         gl.clear(gl.COLOR_BUFFER_BIT);
         gmst.render();
         gl.useProgram(dynshad.prog);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, gmst.chesttex);
-        gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
-        var t = gl.getUniformLocation(dynshad.prog, 'i');
-        gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(t);
-        gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), 0, 0);
-        gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
-        gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 2, 1);
-        gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 1, 1);
-        gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), Math.PI / 2);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        if ((Math.round(stuneffect * 5)) % 2 == 0 || !(pl.stun > 0)) {
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, pltextures[pl.outfit]);
+            gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
+            var t = gl.getUniformLocation(dynshad.prog, 'i');
+            gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(t);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), 0, 0);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
+            gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 1, 2);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 1, -1);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, ((Math.round(pl.pos.x) + Math.round(pl.pos.y)) % 2) ? 0 : 1);
+            gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), 0);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        }
+        stuneffect += dt;
+        stuneffect = stuneffect % 20;
         for (var id in oplayers) {
             if (id != socket.id) {
-                gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
-                var t_1 = gl.getUniformLocation(dynshad.prog, 'i');
-                gl.vertexAttribPointer(t_1, 4, gl.FLOAT, false, 0, 0);
-                gl.enableVertexAttribArray(t_1);
-                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), oplayers[id].pos.x - pl.pos.x, oplayers[id].pos.y - pl.pos.y);
-                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
-                gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 2, 1);
-                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 1, 1);
-                gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), Math.PI * 1.5);
-                gl.drawArrays(gl.TRIANGLES, 0, 6);
-                gl.bindBuffer(gl.ARRAY_BUFFER, null);
+                if ((Math.round(stuneffect * 5)) % 2 == 0 || !(oplayers[id].stun > 0)) {
+                    gl.activeTexture(gl.TEXTURE0);
+                    gl.bindTexture(gl.TEXTURE_2D, pltextures[oplayers[id].outfit]);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
+                    var t = gl.getUniformLocation(dynshad.prog, 'i');
+                    gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
+                    gl.enableVertexAttribArray(t);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), oplayers[id].pos.x - pl.pos.x, oplayers[id].pos.y - pl.pos.y);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
+                    gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 1, 2);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 1, -1);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, ((Math.round(oplayers[id].pos.x) + Math.round(oplayers[id].pos.y)) % 2) ? 1 : 0);
+                    gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), 0);
+                    gl.drawArrays(gl.TRIANGLES, 0, 6);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+                }
+                if (opltemp[id] && opltemp[id].swanim > 0) {
+                    gl.useProgram(dynshad.prog);
+                    gl.activeTexture(gl.TEXTURE0);
+                    gl.bindTexture(gl.TEXTURE_2D, swipetex);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
+                    var t = gl.getUniformLocation(dynshad.prog, 'i');
+                    gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
+                    gl.enableVertexAttribArray(t);
+                    {
+                        var v_1 = directions[oplayers[id].dir].smul(1.5);
+                        gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), oplayers[id].pos.x - pl.pos.x + v_1.x, oplayers[id].pos.y - pl.pos.y + v_1.y);
+                    }
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), (1 / 12));
+                    gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 1, 1);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 4, -4);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, 0);
+                    gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), dangles[oplayers[id].dir]);
+                    gl.drawArrays(gl.TRIANGLES, 0, 6);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+                }
+                if (opltemp[id] && opltemp[id].swanim > 0)
+                    opltemp[id].swanim -= dt;
             }
+        }
+        if (pl.swanim > 0) {
+            gl.useProgram(dynshad.prog);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, swipetex);
+            gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
+            var t = gl.getUniformLocation(dynshad.prog, 'i');
+            gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(t);
+            {
+                var v_2 = directions[pl.dir].smul(1.5);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), v_2.x, v_2.y);
+            }
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), (1 / 12));
+            gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 1, 1);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 4, -4);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, 0);
+            gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), dangles[pl.dir]);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
         }
         if (pl.hlen >= 0.1) {
             gl.useProgram(dynshad.prog);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, gmst.chesttex);
             gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
-            var t_2 = gl.getUniformLocation(dynshad.prog, 'i');
-            gl.vertexAttribPointer(t_2, 4, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(t_2);
+            var t = gl.getUniformLocation(dynshad.prog, 'i');
+            gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(t);
             gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), pl.hlen * directions[pl.dir].x, pl.hlen * directions[pl.dir].y);
             gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
             gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 2, 1);
             gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 0.3, 0.3);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, 0);
             gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), 0);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         }
         gl.useProgram(null);
     }
+    if (pl.hp <= 0) {
+        pl = new player(pl.name, Math.max(pl.points - 5, 0));
+    }
     for (var i = 0; i < invdisp.length; i++) {
         if (i == invfocus) {
-            invdisp[i].style.zIndex = 101;
+            invdisp[i].style.zIndex = 102;
             invdisp[i].style.outlineColor = 'red';
         }
         else {
-            invdisp[i].style.zIndex = 100;
-            invdisp[i].style.outlineColor = 'black';
+            if (i < 2) {
+                invdisp[i].style.zIndex = 101;
+                invdisp[i].style.outlineColor = 'green';
+            }
+            else if (i < 4) {
+                invdisp[i].style.zIndex = 101;
+                invdisp[i].style.outlineColor = 'blue';
+            }
+            else {
+                invdisp[i].style.zIndex = 100;
+                invdisp[i].style.outlineColor = 'black';
+            }
         }
         invdisp[i].src = itemgraphics[pl.items[i]];
     }
+    hptext.innerHTML = "HP : " + Math.floor(pl.hp).toString() + " / 100";
+    nametext.innerHTML = "Name : " + pl.name;
+    pointtext.innerHTML = "Points : " + pl.points.toString();
+    if (pl.team == null)
+        teamtext.innerHTML = '';
+    else
+        teamtext.innerHTML = "Team : " + pl.team;
+    if (cnewtime > 0) {
+        cnewtime -= dt;
+        chatelements[0].style.fontSize = (14 + cnewtime * 4).toString() + 'px';
+    }
+    else
+        chatelements[0].style.fontSize = '14px';
+    {
+        var t = [];
+        for (var i in oplayers) {
+            t.push(oplayers[i]);
+        }
+        t.sort(function (a, b) { return a.points - b.points; });
+        for (var i = 0; i < 5; i++) {
+            var s = void 0;
+            if (i < t.length) {
+                s = t[i].name;
+                if (t[i].team != null)
+                    s += " (" + t[i].team + ")";
+                s += ": " + t[i].points.toString();
+            }
+            else {
+                s = "";
+            }
+            boardelements[i].innerHTML = s;
+        }
+    }
+    pl.swanim -= dt;
+    if (pl.swanim < -0.1)
+        pl.swanim = -1;
+    pl.stun -= dt;
+    if (pl.stun < 0.0)
+        pl.stun = -1;
     var v = new vec(0, 0);
     if (pl.hlen < 0.1) {
-        if (isMobile) {
-            for (var i = 0; i < ongoingTouches.length; i += 1) {
-                if (ongoingTouches[i].pageX < canvas.width / 2) {
-                    v = v.add(new vec(ongoingTouches[i].pageX - canvas.width / 4, -(ongoingTouches[i].pageY - canvas.height / 2)));
-                }
-            }
-        }
-        else {
-            if (keys.up)
-                v.y++;
-            if (keys.down)
-                v.y--;
-            if (keys.left)
-                v.x--;
-            if (keys.right)
-                v.x++;
-            if (keys.main && !pkeys.main) {
-                if (pl.items[0] == 1) {
-                    pl.hlen = 0.5;
-                }
-            }
-            if (keys.off && !pkeys.off) {
-                if (pl.items[1] == 1) {
-                    pl.hlen = 0.5;
-                }
-            }
-        }
-        if (v.lensq() > 0.1) {
-            v = v.norm();
-            if (v.dot(directions[2]) > v.dot(directions[0]) - 0.01 && v.dot(directions[2]) > v.dot(directions[1]) - 0.01 && v.dot(directions[2]) > v.dot(directions[3]) - 0.01)
-                pl.dir = 2;
-            if (v.dot(directions[3]) > v.dot(directions[0]) - 0.01 && v.dot(directions[3]) > v.dot(directions[1]) - 0.01 && v.dot(directions[3]) > v.dot(directions[2]) - 0.01)
-                pl.dir = 3;
-            if (v.dot(directions[0]) > v.dot(directions[1]) - 0.01 && v.dot(directions[0]) > v.dot(directions[2]) - 0.01 && v.dot(directions[0]) > v.dot(directions[3]) - 0.01)
-                pl.dir = 0;
-            if (v.dot(directions[1]) > v.dot(directions[0]) - 0.01 && v.dot(directions[1]) > v.dot(directions[2]) - 0.01 && v.dot(directions[1]) > v.dot(directions[3]) - 0.01)
-                pl.dir = 1;
-            v = v.smul(dt * 8);
-        }
-        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y)) == 0) {
-            pl = new player();
-        }
-        var t = false;
-        for (var i in pl.items)
-            if (pl.items[i] == 0)
-                t = true;
-        if (t)
-            for (var c in gmst.chests) {
-                if (gmst.chests[c].id > 0) {
-                    if (Math.floor(pl.pos.x) == gmst.chests[c].pos.x && Math.floor(pl.pos.y) == gmst.chests[c].pos.y) {
-                        socket.emit('ch', { 'id': c, 'v': gmst.chests[c].id }, socket.id);
-                        gmst.chests[c].id = -gmst.chests[c].id;
+        if (pl.swanim < 0.0 && pl.stun < 1.2) {
+            if (isMobile) {
+                for (var i = 0; i < ongoingTouches.length; i += 1) {
+                    if (ongoingTouches[i].pageX < canvas.width / 2) {
+                        v = v.add(new vec(ongoingTouches[i].pageX - canvas.width / 4, -(ongoingTouches[i].pageY - canvas.height / 2)));
                     }
                 }
             }
+            else {
+                if (keys.up)
+                    v.y++;
+                if (keys.down)
+                    v.y--;
+                if (keys.left)
+                    v.x--;
+                if (keys.right)
+                    v.x++;
+                if (keys.main && !pkeys.main) {
+                    switch (pl.items[0]) {
+                        case 1:
+                            pl.hlen = 0.5;
+                            break;
+                        case 2:
+                            if (pl.swanim < -0.1)
+                                sword(5);
+                            break;
+                        case 3:
+                            if (pl.swanim < -0.1)
+                                sword(10);
+                            break;
+                        case 4:
+                            if (pl.swanim < -0.1)
+                                sword(20);
+                            break;
+                        case 5:
+                            if (pl.swanim < -0.1)
+                                sword(35);
+                            break;
+                        case 6:
+                            if (pl.swanim < -0.1)
+                                sword(50);
+                            break;
+                    }
+                }
+                if (keys.off && !pkeys.off) {
+                    switch (pl.items[1]) {
+                        case 1:
+                            pl.hlen = 0.5;
+                            break;
+                        case 2:
+                            if (pl.swanim < -0.1)
+                                sword(5);
+                            break;
+                        case 3:
+                            if (pl.swanim < -0.1)
+                                sword(10);
+                            break;
+                        case 4:
+                            if (pl.swanim < -0.1)
+                                sword(20);
+                            break;
+                        case 5:
+                            if (pl.swanim < -0.1)
+                                sword(35);
+                            break;
+                        case 6:
+                            if (pl.swanim < -0.1)
+                                sword(50);
+                            break;
+                    }
+                }
+            }
+            if (v.lensq() > 0.1) {
+                v = v.norm();
+                if (v.dot(directions[2]) > v.dot(directions[0]) - 0.01 && v.dot(directions[2]) > v.dot(directions[1]) - 0.01 && v.dot(directions[2]) > v.dot(directions[3]) - 0.01)
+                    pl.dir = 2;
+                if (v.dot(directions[3]) > v.dot(directions[0]) - 0.01 && v.dot(directions[3]) > v.dot(directions[1]) - 0.01 && v.dot(directions[3]) > v.dot(directions[2]) - 0.01)
+                    pl.dir = 3;
+                if (v.dot(directions[0]) > v.dot(directions[1]) - 0.01 && v.dot(directions[0]) > v.dot(directions[2]) - 0.01 && v.dot(directions[0]) > v.dot(directions[3]) - 0.01)
+                    pl.dir = 0;
+                if (v.dot(directions[1]) > v.dot(directions[0]) - 0.01 && v.dot(directions[1]) > v.dot(directions[2]) - 0.01 && v.dot(directions[1]) > v.dot(directions[3]) - 0.01)
+                    pl.dir = 1;
+                v = v.smul(dt * 8 * pl.checkspd());
+            }
+            if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y)) == 0) {
+                pl.hp = -1;
+            }
+            var t = false;
+            for (var i in pl.items)
+                if (pl.items[i] == 0)
+                    t = true;
+            if (t)
+                for (var c in gmst.chests) {
+                    if (gmst.chests[c].id > 0) {
+                        if (Math.floor(pl.pos.x) == gmst.chests[c].pos.x && Math.floor(pl.pos.y) == gmst.chests[c].pos.y) {
+                            socket.emit('ch', { 'id': c, 'v': gmst.chests[c].id }, socket.id);
+                            gmst.chests[c].id = -gmst.chests[c].id;
+                        }
+                    }
+                }
+        }
     }
     else {
         var p = pl.pos.add(directions[pl.dir].smul(pl.hlen));
@@ -810,7 +1132,7 @@ function updatefunc() {
         else {
             var steps_1 = Math.ceil(dt * 40 + 0.1);
             for (var i = 0; i < steps_1; i++) {
-                pl.hlen += 20 * (dt / steps_1);
+                pl.hlen += 30 * (dt / steps_1);
                 p = pl.pos.add(directions[pl.dir].smul(pl.hlen));
                 if (gmst.level.g(Math.floor(p.x), Math.floor(p.y)) < 0) {
                     break;

@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>fdx</title>
     <style>
-        canvas,canvas2d {
+        canvas {
             width: 100%;
             height: 100%;
             position: absolute;
@@ -12,9 +12,6 @@
         }
         canvas{
           z-index: -1;
-        }
-        canvas2d{
-          z-index: 0;
         }
         html,body {
           overflow-y: hidden;
@@ -27,20 +24,35 @@
           margin:0;padding: 0;
         }
 
+
     </style>
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 
     <canvas id="canvas"></canvas>
-    <canvas id="canvas2d"></canvas>
    <input type="text" id="chatbox" name="chatbox" style="position: absolute; z-index: 1; left: 8px; bottom: 16px; font-size:14px;height:14px;width:100px;">
-	<input onclick="socket.emit('chat','< ' + pl.name + ' > :'+document.getElementById('chatbox').value);document.getElementById('chatbox').value='';" type="submit" value="OK" style="position: absolute; z-index: 1; left: 108px;font-size:14px; bottom: 16px; width:50px; height:34px;">
+	<input onclick="socket.emit('chat','< ' + pl.name + ' > :'+document.getElementById('chatbox').value);document.getElementById('chatbox').value='';" type="submit" value="OK" style="position: absolute; z-index: 1; left: 108px;font-size:14px; bottom: 16px; width:50px; height:20px;">
   <p id="ctxt0" style=" bolder;position: absolute; left: 8px; bottom: 48px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;" ></p>
   <p id="ctxt1" style=" bolder;position: absolute; left: 8px; bottom: 64px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;"></p>
   <p id="ctxt2" style=" bolder;position: absolute; left: 8px; bottom: 80px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;"></p>
   <p id="ctxt3" style=" bolder;position: absolute; left: 8px; bottom: 96px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;"></p>
   <p id="ctxt4" style=" bolder;position: absolute; left: 8px; bottom: 112px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;"></p>
+
+  <p id="board0" style=" bolder;position: absolute; right: 8px; top: 48px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;" ></p>
+  <p id="board1" style=" bolder;position: absolute; right: 8px; top: 64px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;"></p>
+  <p id="board2" style=" bolder;position: absolute; right: 8px; top: 80px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;"></p>
+  <p id="board3" style=" bolder;position: absolute; right: 8px; top: 96px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;"></p>
+  <p id="board4" style=" bolder;position: absolute; right: 8px; top: 112px; font-size:14px;height:14px; filter: invert(1);mix-blend-mode: difference;"></p>
+
+  <p id="hp" style=" bolder;position: absolute; right: 8px; bottom: 64px; font-size:32px;height:32px; filter: invert(1);mix-blend-mode: difference;"></p>
+  <p id="name" style=" bolder;position: absolute; right: 8px; bottom: 32px; font-size:32px;height:32px; filter: invert(1);mix-blend-mode: difference;"></p>
+  <p id="points" style=" bolder;position: absolute; right: 8px; bottom: 0px; font-size:32px;height:32px; filter: invert(1);mix-blend-mode: difference;"></p>
+  <p id="team" style=" bolder;position: absolute; right: 8px; bottom: 96px; font-size:32px;height:32px; filter: invert(1);mix-blend-mode: difference;"></p>
+
+
+  <input type="text" id="teamname" name="join/make team" style="position: absolute; z-index: 1; right: 120px; top: 16px; font-size:14px;height:14px;width:100px;">
+  <input onclick="if (document.getElementById('teamname').value=='')pl.team=null; else pl.team=document.getElementById('teamname').value;document.getElementById('teamname').value='';" type="submit" value="join/make team" style="position: absolute; z-index: 1; right: 8px;font-size:14px; top: 16px; width:110px; height:20px;">
 
 
 
