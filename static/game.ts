@@ -1135,9 +1135,7 @@ function updatefunc() {
 
       v = v.smul(dt*8*pl.checkspd());
     }
-    if (gmst.level.g(Math.floor(pl.pos.x),Math.floor(pl.pos.y))==0){
-      pl.hp=-1;
-    }
+
     let t:boolean = false;
     for (let i in pl.items)
       if (pl.items[i]==0)
@@ -1232,6 +1230,11 @@ function updatefunc() {
 
     if (gmst.level.g(Math.floor(pl.pos.x),Math.floor(pl.pos.y))<0){
       pl.pos.y+=0.5;
+    }
+
+    if (gmst.level.g(Math.floor(pl.pos.x),Math.floor(pl.pos.y))==0){
+      pl.hp=-1;
+      socket.emit('chat',"< "+pl.name+" > fell in the void");
     }
 
   }

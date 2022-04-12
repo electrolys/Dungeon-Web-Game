@@ -1104,9 +1104,6 @@ function updatefunc() {
                     pl.dir = 1;
                 v = v.smul(dt * 8 * pl.checkspd());
             }
-            if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y)) == 0) {
-                pl.hp = -1;
-            }
             var t = false;
             for (var i in pl.items)
                 if (pl.items[i] == 0)
@@ -1193,6 +1190,10 @@ function updatefunc() {
         }
         if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y)) < 0) {
             pl.pos.y += 0.5;
+        }
+        if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y)) == 0) {
+            pl.hp = -1;
+            socket.emit('chat', "< " + pl.name + " > fell in the void");
         }
     }
     if (b) {
