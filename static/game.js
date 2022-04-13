@@ -124,9 +124,10 @@ function loadTexture(url) {
 var directions = [new vec(0, 1), new vec(0, -1), new vec(-1, 0), new vec(1, 0)];
 var dangles = [0, Math.PI, Math.PI * 0.5, Math.PI * 1.5];
 var player = /** @class */ (function () {
-    function player(name, points) {
+    function player(name, points, team) {
         if (name === void 0) { name = "loading..."; }
         if (points === void 0) { points = 0; }
+        if (team === void 0) { team = null; }
         this.pos = new vec(10, 980);
         this.hp = 100;
         // this.items=[1,0,0,13,
@@ -146,7 +147,7 @@ var player = /** @class */ (function () {
         this.stun = -1;
         this.outfit = 0;
         this.points = points;
-        this.team = null;
+        this.team = team;
     }
     player.prototype.checkdef = function () {
         var t = 1;
@@ -524,7 +525,7 @@ socket.on('chr', function (ch) {
 socket.on('dmg', function (dmg, from) {
     if (pl.stun < 0.0) {
         pl.stun = 1.7;
-        pl.hp -= dmg / pl.checkdef();
+        pl.hp -= Math.ceil(dmg / pl.checkdef());
         if (pl.hp <= 0) {
             socket.emit('pt', from, socket.id);
         }
@@ -979,9 +980,8 @@ function updatefunc() {
         }
         gl.useProgram(null);
     }
-    if (pl.hp <= 0) {
-        pl = new player(pl.name, Math.max(pl.points - 5, 0));
-    }
+    if (pl.hp <= 0)
+        pl = new player(pl.name, Math.max(pl.points - 5, 0), pl.team);
     for (var i = 0; i < invdisp.length; i++) {
         if (i == invfocus) {
             invdisp[i].style.zIndex = 102;
