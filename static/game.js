@@ -652,14 +652,15 @@ else {
         }
     });
 }
-function createButton(func, style, v) {
+function createButton(func, style, v, d) {
     if (v === void 0) { v = ""; }
+    if (d === void 0) { d = document.body; }
     var button = document.createElement("input");
     button.type = "button";
     button.value = v;
     button.onclick = func;
     button.style = style;
-    document.body.appendChild(button);
+    d.appendChild(button);
     return button;
 }
 function createButtoni(func, style) {
@@ -812,7 +813,7 @@ var trashbutton = createButtoni(function () { if (invfocus != -1) {
 trashbutton.src = "static/img/items/trash.png";
 var allyelements = {};
 function cally(id) {
-    allyelements[id] = createButton(new Function("if (invfocus!=-1){socket.emit('give',pl.items[invfocus],'" + id + "') ;pl.items[invfocus]=0;invfocus=-1; }"), "position:relative;left:300", oplayers[id].name);
+    allyelements[id] = createButton(new Function("if (invfocus!=-1){socket.emit('give',pl.items[invfocus],'" + id + "') ;pl.items[invfocus]=0;invfocus=-1; }"), "", oplayers[id].name, document.getElementById('teammembers'));
 }
 function dally(id) {
     allyelements[id].remove();
