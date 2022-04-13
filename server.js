@@ -51,6 +51,9 @@ io.on('connection', function(socket) {
     }
 
   });
+  socket.on('give', function(item,user) {
+    io.sockets.to(user).emit('g',item);
+  });
   socket.on('atk', function(dmg,to,from) {
       io.sockets.to(to).emit('dmg',dmg,from);
   });

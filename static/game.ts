@@ -553,6 +553,7 @@ socket.on('s', function(players) {
 var chatelements:any[] = [document.getElementById('ctxt0'),document.getElementById('ctxt1'),document.getElementById('ctxt2'),document.getElementById('ctxt3'),document.getElementById('ctxt4')];
 var boardelements:any[] = [document.getElementById('board0'),document.getElementById('board1'),document.getElementById('board2'),document.getElementById('board3'),document.getElementById('board4')];
 
+
 var cnewtime=-1;
 
 function chat(message) {
@@ -569,6 +570,14 @@ socket.on('chg',function(ch) {
   for (let i in pl.items){
     if (pl.items[i]==0){
       pl.items[i]=ch['v'];
+      break;
+    }
+  }
+});
+socket.on('g',function(item) {
+  for (let i in pl.items){
+    if (pl.items[i]==0){
+      pl.items[i]=item;
       break;
     }
   }
@@ -632,7 +641,7 @@ document.body.addEventListener('click', function(e) {
   for (let i in oplayers){
     if (x>oplayers[i].pos.x-plsizeh && x<oplayers[i].pos.x+plsizeh && y>oplayers[i].pos.y-plsizeh && y<oplayers[i].pos.y+plsizeh){
       if (oplayers[i].team!=null)
-        chat(oplayers[i].name+" on team: "+oplayers.team+" ("+oplayers[i].points+")");
+        chat(oplayers[i].name+" : "+oplayers[i].team+" ("+oplayers[i].points+")");
       else
         chat(oplayers[i].name+" ("+oplayers[i].points+")");
     }
@@ -774,6 +783,19 @@ var invdisp:any[] = [
 
 var trashbutton:any = createButtoni(function(){if (invfocus!=-1){pl.items[invfocus]=0;invfocus=-1;}},"position: absolute; left: 32px; top: 312px;width:64px; height:64px;");
 trashbutton.src = "static/img/items/trash.png";
+
+
+var allyelements={};
+
+function cally(id){
+  allyelements[id] = createButton(new Function("if (invfocus!=-1){socket.emit('give',pl.items[invfocus],'"+id+"') ;pl.items[invfocus]=0;invfocus=-1; }" ) ,"position:relative;left:300",oplayers[id].name );
+
+}
+function dally(id){
+  allyelements[id].remove();
+  delete allyelements[id];
+}
+
 //var givebutton:any = createButton(function(){pl.maini=3},"position: absolute; left: 128px; top: 112px;","give");
 
 
@@ -823,9 +845,11 @@ var pltextures:string[] = [loadTexture('static/img/pl/player0.png'),loadTexture(
 
 var stuneffect:number = 0;
 var regtime:number = 0;
+
+var dt:number;
 function updatefunc() {
   var currentTime:any = performance.now();
-  var dt:number = (currentTime - lastUpdateTime)/1000.0;
+  dt = (currentTime - lastUpdateTime)/1000.0;
   regtime+=dt;
   if (regtime>3.0){
     pl.hp+=pl.checkreg();
@@ -834,6 +858,15 @@ function updatefunc() {
   if (pl.hp>100){
     pl.hp=100;
   }
+
+  if (pl.team!=null){
+    pl.team = pl.team.replace(' ','');
+  }
+  if (pl.team!=null)
+    if (pl.team.length<1)
+      pl.team = null;
+
+
 
   {
     if (canvas.width != window.innerWidth || canvas.height != window.innerHeight){
@@ -1035,6 +1068,25 @@ function updatefunc() {
 
 
     }
+    for (let i in oplayers){
+
+      if (allyelements[i]){
+        if (oplayers[i].team==null || oplayers[i].team!=pl.team || i==socket.id)
+          dally(i);
+      }else if (oplayers[i].team!=null && oplayers[i].team==pl.team && i!=socket.id)
+          cally(i);
+    }
+
+    for (let i in allyelements){
+      if (!oplayers[i]){
+        dally(i);
+      }
+    }
+
+
+
+
+
 
   }
 
@@ -1136,20 +1188,7 @@ function updatefunc() {
       v = v.smul(dt*8*pl.checkspd());
     }
 
-    let t:boolean = false;
-    for (let i in pl.items)
-      if (pl.items[i]==0)
-        t = true;
 
-    if (t)
-      for (let c in gmst.chests){
-        if (gmst.chests[c].id >0){
-          if (Math.floor(pl.pos.x)==gmst.chests[c].pos.x && Math.floor(pl.pos.y) == gmst.chests[c].pos.y ){
-            socket.emit('ch',{'id':c,'v':gmst.chests[c].id},socket.id);
-            gmst.chests[c].id=-gmst.chests[c].id;
-          }
-        }
-      }
   }
   }else{
     let p = pl.pos.add(directions[pl.dir].smul(pl.hlen));
@@ -1231,12 +1270,27 @@ function updatefunc() {
     if (gmst.level.g(Math.floor(pl.pos.x),Math.floor(pl.pos.y))<0){
       pl.pos.y+=0.5;
     }
+    if (pl.hlen < 0.1)
+      if (gmst.level.g(Math.floor(pl.pos.x),Math.floor(pl.pos.y))==0){
+        pl.hp=-1;
+        socket.emit('chat',"< "+pl.name+" > fell in the void");
+      }
+    {
+      let t:boolean = false;
+      for (let i in pl.items)
+        if (pl.items[i]==0)
+          t = true;
 
-    if (gmst.level.g(Math.floor(pl.pos.x),Math.floor(pl.pos.y))==0){
-      pl.hp=-1;
-      socket.emit('chat',"< "+pl.name+" > fell in the void");
+      if (t)
+        for (let c in gmst.chests){
+          if (gmst.chests[c].id >0){
+            if (Math.floor(pl.pos.x)==gmst.chests[c].pos.x && Math.floor(pl.pos.y) == gmst.chests[c].pos.y ){
+              socket.emit('ch',{'id':c,'v':gmst.chests[c].id},socket.id);
+              gmst.chests[c].id=-gmst.chests[c].id;
+            }
+          }
+        }
     }
-
   }
   if (b){
     pl.hlen = 0;
