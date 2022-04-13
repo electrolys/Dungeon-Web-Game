@@ -152,24 +152,24 @@ var player = /** @class */ (function () {
         var t = 1;
         switch (this.items[2]) {
             case 7:
-                t += 0.3;
-                break;
-            case 8:
                 t += 0.6;
                 break;
-            case 9:
+            case 8:
                 t += 1.0;
+                break;
+            case 9:
+                t += 1.5;
                 break;
         }
         switch (this.items[3]) {
             case 7:
-                t += 0.3;
-                break;
-            case 8:
                 t += 0.6;
                 break;
-            case 9:
+            case 8:
                 t += 1.0;
+                break;
+            case 9:
+                t += 1.5;
                 break;
         }
         return t;
@@ -1019,15 +1019,26 @@ function updatefunc() {
     {
         var t = [];
         for (var i in oplayers) {
-            t.push(oplayers[i]);
+            if (oplayers[i].team == null) {
+                t.push(oplayers[i]);
+            }
+            else {
+                var b_1 = true;
+                for (var j = 0; j < t.length; j++)
+                    if (t[j].team == oplayers[i].team) {
+                        t[j].points += oplayers[i].points;
+                        b_1 = false;
+                        break;
+                    }
+                if (b_1)
+                    t.push({ 'name': '[' + oplayers[i].team + ']', 'team': oplayers[i].team, 'points': oplayers[i].points });
+            }
         }
         t.sort(function (a, b) { return a.points - b.points; });
         for (var i = 0; i < 5; i++) {
             var s = void 0;
             if (i < t.length) {
                 s = t[i].name;
-                if (t[i].team != null)
-                    s += " (" + t[i].team + ")";
                 s += ": " + t[i].points.toString();
             }
             else {
