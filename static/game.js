@@ -1050,6 +1050,8 @@ function updatefunc() {
             if (allyelements[i]) {
                 if (oplayers[i].team == null || oplayers[i].team != pl.team || i == socket.id)
                     dally(i);
+                else
+                    allyelements[i].value = oplayers[i].name + "\n(" + oplayers[i].points + ")" + " HP: " + oplayers[i].hp + "/100";
             }
             else if (oplayers[i].team != null && oplayers[i].team == pl.team && i != socket.id)
                 cally(i);
