@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+11811884;
 var socket = io();
 function loadtxt(filePath, mimeType) {
     var xmlhttp = new XMLHttpRequest();
@@ -695,7 +696,7 @@ if (isMobile) {
             pl.items[0] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:3px solid green;position: absolute; left: 16px; top: 16px;width:32px; height:32px;"),
+        } }, "outline:2px solid green;position: absolute; left: 16px; top: 16px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 1;
         else {
@@ -703,7 +704,7 @@ if (isMobile) {
             pl.items[1] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:3px solid green;position: absolute; left: 35px; top: 16px;width:32px; height:32px;"),
+        } }, "outline:2px solid green;position: absolute; left: 50px; top: 16px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 2;
         else {
@@ -711,7 +712,7 @@ if (isMobile) {
             pl.items[2] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:3px solid blue;position: absolute; left: 54px; top: 16px;width:32px; height:32px;"),
+        } }, "outline:2px solid blue;position: absolute; left: 84px; top: 16px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 3;
         else {
@@ -719,7 +720,7 @@ if (isMobile) {
             pl.items[3] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:3px solid blue;position: absolute; left: 73px; top: 16px;width:32px; height:32px;"),
+        } }, "outline:2px solid blue;position: absolute; left: 118px; top: 16px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 4;
         else {
@@ -727,7 +728,7 @@ if (isMobile) {
             pl.items[4] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:3px solid black;position: absolute; left: 16px; top: 35px;width:32px; height:32px;"),
+        } }, "outline:2px solid black;position: absolute; left: 16px; top: 50px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 5;
         else {
@@ -735,7 +736,7 @@ if (isMobile) {
             pl.items[5] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:3px solid black;position: absolute; left: 35px; top: 35px;width:32px; height:32px;"),
+        } }, "outline:2px solid black;position: absolute; left: 50px; top: 50px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 6;
         else {
@@ -743,7 +744,7 @@ if (isMobile) {
             pl.items[6] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:3px solid black;position: absolute; left: 54px; top: 35px;width:32px; height:32px;"),
+        } }, "outline:2px solid black;position: absolute; left: 84px; top: 50px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 7;
         else {
@@ -751,7 +752,7 @@ if (isMobile) {
             pl.items[7] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:3px solid black;position: absolute; left: 73px; top: 35px;width:32px; height:32px;"),
+        } }, "outline:2px solid black;position: absolute; left: 118px; top: 50px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 8;
         else {
@@ -759,7 +760,7 @@ if (isMobile) {
             pl.items[8] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:6px solid black;position: absolute; left: 16px; top: 54px;width:32px; height:32px;"),
+        } }, "outline:2px solid black;position: absolute; left: 16px; top: 84px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 9;
         else {
@@ -767,7 +768,7 @@ if (isMobile) {
             pl.items[9] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:6px solid black;position: absolute; left: 35px; top: 54px;width:32px; height:32px;"),
+        } }, "outline:2px solid black;position: absolute; left: 50px; top: 84px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 10;
         else {
@@ -775,7 +776,7 @@ if (isMobile) {
             pl.items[10] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:6px solid black;position: absolute; left: 54px; top: 54px;width:32px; height:32px;"),
+        } }, "outline:2px solid black;position: absolute; left: 84px; top: 84px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 11;
         else {
@@ -783,7 +784,7 @@ if (isMobile) {
             pl.items[11] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:6px solid black;position: absolute; left: 73px; top: 54px;width:32px; height:32px;"),
+        } }, "outline:2px solid black;position: absolute; left: 118px; top: 84px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 12;
         else {
@@ -791,7 +792,7 @@ if (isMobile) {
             pl.items[12] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:6px solid black;position: absolute; left: 16px; top: 73px;width:32px; height:32px;"),
+        } }, "outline:2px solid black;position: absolute; left: 16px; top: 118px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 13;
         else {
@@ -799,7 +800,7 @@ if (isMobile) {
             pl.items[13] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:6px solid black;position: absolute; left: 35px; top: 73px;width:32px; height:32px;"),
+        } }, "outline:2px solid black;position: absolute; left: 50px; top: 118px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 14;
         else {
@@ -807,7 +808,7 @@ if (isMobile) {
             pl.items[14] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:6px solid black;position: absolute; left: 54px; top: 73px;width:32px; height:32px;"),
+        } }, "outline:2px solid black;position: absolute; left: 84px; top: 118px;width:32px; height:32px;"),
         createButtoni(function () { if (invfocus == -1)
             invfocus = 15;
         else {
@@ -815,13 +816,13 @@ if (isMobile) {
             pl.items[15] = pl.items[invfocus];
             pl.items[invfocus] = t;
             invfocus = -1;
-        } }, "outline:6px solid black;position: absolute; left: 73px; top: 73px;width:32px; height:32px;")
+        } }, "outline:2px solid black;position: absolute; left: 118px; top: 118px;width:32px; height:32px;")
     ];
     trashbutton = createButtoni(function () { if (invfocus != -1) {
         pl.items[invfocus] = 0;
         invfocus = -1;
-    } }, "position: absolute; left: 16px; top: 92px;width:32px; height:32px;");
-    document.getElementById('teammembers').style.cssText = "width: 100px; height: 75px; line-height: 1em; overflow:scroll; border: thin #000 solid; padding: 5px;position:absolute;left:40px;top:92px";
+    } }, "position: absolute; left: 152px; top: 16px;width:32px; height:32px;");
+    document.getElementById('teammembers').style.cssText = "width: 50px; height: 100px; line-height: 1em; overflow:scroll; border: thin #000 solid; padding: 5px;position:absolute;left:152px;top:40px";
     for (var i = 0; i < chatelements.length; i++) {
         chatelements[i].style.fontSize = "7px";
     }
