@@ -684,140 +684,286 @@ function createButtoni(func, style) {
 }
 var invfocus = -1;
 var itemgraphics = ["static/img/items/nullitem.png", "static/img/items/hookshot.png", "static/img/items/sword0.png", "static/img/items/sword1.png", "static/img/items/sword2.png", "static/img/items/sword3.png", "static/img/items/sword4.png", "static/img/items/armor0.png", "static/img/items/armor1.png", "static/img/items/armor2.png", "static/img/items/boots0.png", "static/img/items/boots1.png", "static/img/items/hat0.png", "static/img/items/hat1.png"];
-var invdisp = [
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 0;
-    else {
-        var t = pl.items[0];
-        pl.items[0] = pl.items[invfocus];
-        pl.items[invfocus] = t;
+var invdisp;
+var trashbutton;
+if (isMobile) {
+    invdisp = [
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 0;
+        else {
+            var t = pl.items[0];
+            pl.items[0] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:3px solid green;position: absolute; left: 16px; top: 16px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 1;
+        else {
+            var t = pl.items[1];
+            pl.items[1] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:3px solid green;position: absolute; left: 35px; top: 16px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 2;
+        else {
+            var t = pl.items[2];
+            pl.items[2] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:3px solid blue;position: absolute; left: 54px; top: 16px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 3;
+        else {
+            var t = pl.items[3];
+            pl.items[3] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:3px solid blue;position: absolute; left: 73px; top: 16px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 4;
+        else {
+            var t = pl.items[4];
+            pl.items[4] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:3px solid black;position: absolute; left: 16px; top: 35px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 5;
+        else {
+            var t = pl.items[5];
+            pl.items[5] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:3px solid black;position: absolute; left: 35px; top: 35px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 6;
+        else {
+            var t = pl.items[6];
+            pl.items[6] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:3px solid black;position: absolute; left: 54px; top: 35px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 7;
+        else {
+            var t = pl.items[7];
+            pl.items[7] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:3px solid black;position: absolute; left: 73px; top: 35px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 8;
+        else {
+            var t = pl.items[8];
+            pl.items[8] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 16px; top: 54px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 9;
+        else {
+            var t = pl.items[9];
+            pl.items[9] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 35px; top: 54px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 10;
+        else {
+            var t = pl.items[10];
+            pl.items[10] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 54px; top: 54px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 11;
+        else {
+            var t = pl.items[11];
+            pl.items[11] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 73px; top: 54px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 12;
+        else {
+            var t = pl.items[12];
+            pl.items[12] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 16px; top: 73px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 13;
+        else {
+            var t = pl.items[13];
+            pl.items[13] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 35px; top: 73px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 14;
+        else {
+            var t = pl.items[14];
+            pl.items[14] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 54px; top: 73px;width:32px; height:32px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 15;
+        else {
+            var t = pl.items[15];
+            pl.items[15] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 73px; top: 73px;width:32px; height:32px;")
+    ];
+    trashbutton = createButtoni(function () { if (invfocus != -1) {
+        pl.items[invfocus] = 0;
         invfocus = -1;
-    } }, "outline:6px solid green;position: absolute; left: 32px; top: 32px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 1;
-    else {
-        var t = pl.items[1];
-        pl.items[1] = pl.items[invfocus];
-        pl.items[invfocus] = t;
+    } }, "position: absolute; left: 16px; top: 92px;width:32px; height:32px;");
+    document.getElementById('teammembers').style.cssText = "width: 100px; height: 75px; line-height: 1em; overflow:scroll; border: thin #000 solid; padding: 5px;position:absolute;left:40px;top:92px";
+    for (var i = 0; i < chatelements.length; i++) {
+        chatelements[i].style.fontSize = "7px";
+    }
+    for (var i = 0; i < boardelements.length; i++)
+        boardelements[i].style.fontSize = "7px";
+}
+else {
+    invdisp = [
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 0;
+        else {
+            var t = pl.items[0];
+            pl.items[0] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid green;position: absolute; left: 32px; top: 32px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 1;
+        else {
+            var t = pl.items[1];
+            pl.items[1] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid green;position: absolute; left: 102px; top: 32px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 2;
+        else {
+            var t = pl.items[2];
+            pl.items[2] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid blue;position: absolute; left: 172px; top: 32px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 3;
+        else {
+            var t = pl.items[3];
+            pl.items[3] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid blue;position: absolute; left: 242px; top: 32px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 4;
+        else {
+            var t = pl.items[4];
+            pl.items[4] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 32px; top: 102px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 5;
+        else {
+            var t = pl.items[5];
+            pl.items[5] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 102px; top: 102px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 6;
+        else {
+            var t = pl.items[6];
+            pl.items[6] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 172px; top: 102px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 7;
+        else {
+            var t = pl.items[7];
+            pl.items[7] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 242px; top: 102px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 8;
+        else {
+            var t = pl.items[8];
+            pl.items[8] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 32px; top: 172px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 9;
+        else {
+            var t = pl.items[9];
+            pl.items[9] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 102px; top: 172px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 10;
+        else {
+            var t = pl.items[10];
+            pl.items[10] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 172px; top: 172px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 11;
+        else {
+            var t = pl.items[11];
+            pl.items[11] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 242px; top: 172px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 12;
+        else {
+            var t = pl.items[12];
+            pl.items[12] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 32px; top: 242px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 13;
+        else {
+            var t = pl.items[13];
+            pl.items[13] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 102px; top: 242px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 14;
+        else {
+            var t = pl.items[14];
+            pl.items[14] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 172px; top: 242px;width:64px; height:64px;"),
+        createButtoni(function () { if (invfocus == -1)
+            invfocus = 15;
+        else {
+            var t = pl.items[15];
+            pl.items[15] = pl.items[invfocus];
+            pl.items[invfocus] = t;
+            invfocus = -1;
+        } }, "outline:6px solid black;position: absolute; left: 242px; top: 242px;width:64px; height:64px;")
+    ];
+    trashbutton = createButtoni(function () { if (invfocus != -1) {
+        pl.items[invfocus] = 0;
         invfocus = -1;
-    } }, "outline:6px solid green;position: absolute; left: 102px; top: 32px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 2;
-    else {
-        var t = pl.items[2];
-        pl.items[2] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid blue;position: absolute; left: 172px; top: 32px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 3;
-    else {
-        var t = pl.items[3];
-        pl.items[3] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid blue;position: absolute; left: 242px; top: 32px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 4;
-    else {
-        var t = pl.items[4];
-        pl.items[4] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 32px; top: 102px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 5;
-    else {
-        var t = pl.items[5];
-        pl.items[5] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 102px; top: 102px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 6;
-    else {
-        var t = pl.items[6];
-        pl.items[6] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 172px; top: 102px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 7;
-    else {
-        var t = pl.items[7];
-        pl.items[7] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 242px; top: 102px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 8;
-    else {
-        var t = pl.items[8];
-        pl.items[8] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 32px; top: 172px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 9;
-    else {
-        var t = pl.items[9];
-        pl.items[9] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 102px; top: 172px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 10;
-    else {
-        var t = pl.items[10];
-        pl.items[10] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 172px; top: 172px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 11;
-    else {
-        var t = pl.items[11];
-        pl.items[11] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 242px; top: 172px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 12;
-    else {
-        var t = pl.items[12];
-        pl.items[12] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 32px; top: 242px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 13;
-    else {
-        var t = pl.items[13];
-        pl.items[13] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 102px; top: 242px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 14;
-    else {
-        var t = pl.items[14];
-        pl.items[14] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 172px; top: 242px;width:64px; height:64px;"),
-    createButtoni(function () { if (invfocus == -1)
-        invfocus = 15;
-    else {
-        var t = pl.items[15];
-        pl.items[15] = pl.items[invfocus];
-        pl.items[invfocus] = t;
-        invfocus = -1;
-    } }, "outline:6px solid black;position: absolute; left: 242px; top: 242px;width:64px; height:64px;")
-];
-var trashbutton = createButtoni(function () { if (invfocus != -1) {
-    pl.items[invfocus] = 0;
-    invfocus = -1;
-} }, "position: absolute; left: 32px; top: 312px;width:64px; height:64px;");
+    } }, "position: absolute; left: 32px; top: 312px;width:64px; height:64px;");
+}
 trashbutton.src = "static/img/items/trash.png";
 var allyelements = {};
 function cally(id) {
