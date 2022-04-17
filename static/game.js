@@ -590,10 +590,10 @@ if (isMobile) {
     function handleEnd(e) { ongoingTouches = e.touches; }
     function handleCancel(e) { ongoingTouches = e.touches; }
     function handleMove(e) { ongoingTouches = e.touches; e.preventDefault(); }
-    canvas.addEventListener("touchstart", handleStart, false);
-    canvas.addEventListener("touchend", handleEnd, false);
-    canvas.addEventListener("touchcancel", handleCancel, false);
-    canvas.addEventListener("touchmove", handleMove, false);
+    document.body.addEventListener("touchstart", handleStart, false);
+    document.body.addEventListener("touchend", handleEnd, false);
+    document.body.addEventListener("touchcancel", handleCancel, false);
+    document.body.addEventListener("touchmove", handleMove, false);
 }
 else {
     document.addEventListener('keydown', function (event) {
