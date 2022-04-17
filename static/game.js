@@ -1228,7 +1228,7 @@ function updatefunc() {
             if (isMobile) {
                 for (var i = 0; i < ongoingTouches.length; i += 1) {
                     if (ongoingTouches[i].pageX < canvas.width / 2) {
-                        v = v.add(new vec(ongoingTouches[i].pageX - canvas.width / 4, -(ongoingTouches[i].pageY - canvas.height / 2)));
+                        v = v.add(new vec(ongoingTouches[i].pageX - canvas.width / 4, -(ongoingTouches[i].pageY - (canvas.height * 3 / 4))));
                     }
                 }
             }
@@ -1306,6 +1306,12 @@ function updatefunc() {
                     pl.dir = 0;
                 if (v.dot(directions[1]) > v.dot(directions[0]) - 0.01 && v.dot(directions[1]) > v.dot(directions[2]) - 0.01 && v.dot(directions[1]) > v.dot(directions[3]) - 0.01)
                     pl.dir = 1;
+                if (isMobile) {
+                    var t = (new vec(canvas.width / 4, canvas.height * 3 / 4)).add(v.smul(15));
+                    document.getElementById('joystick').style.display = 'block';
+                    document.getElementById('joystick').style.left = Math.floor(t.x).toString() + 'px';
+                    document.getElementById('joystick').style.top = Math.floor(t.y).toString() + 'px';
+                }
                 v = v.smul(dt * 8 * pl.checkspd());
             }
         }
