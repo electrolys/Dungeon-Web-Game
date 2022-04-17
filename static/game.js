@@ -505,7 +505,7 @@ socket.on('c', chat);
 socket.on('chg', function (ch) {
     for (var i in pl.items) {
         if (pl.items[i] == 0) {
-            pl.items[i] = ch['v'];
+            pl.items[i] = ch;
             break;
         }
     }
@@ -527,12 +527,19 @@ socket.on('dmg', function (dmg, from) {
         pl.stun = 1.7;
         pl.hp -= Math.ceil(dmg / pl.checkdef());
         if (pl.hp <= 0) {
-            socket.emit('pt', from, socket.id);
+            socket.emit('pt', from, socket.id, pl.items);
         }
     }
 });
-socket.on('point', function () {
+socket.on('point', function (inv) {
     pl.points++;
+    for (var i = 0; i < inv.length; i++)
+        if (inv[i] != 0)
+            for (var j = 0; j < pl.items.length; j++)
+                if (pl.items[j] == 0) {
+                    pl.items[j] = inv[i];
+                    break;
+                }
 });
 socket.on('swanim', function (from) {
     if (!opltemp[from])

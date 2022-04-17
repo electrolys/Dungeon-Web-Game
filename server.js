@@ -36,6 +36,14 @@ function distsq(a,b){
   return a.x*b.x+a.y*b.y;
 }
 
+const rarities = [
+  [0],
+  [1,2,7],
+  [10,8,3,7,1],
+  [4,5,11,9,12,8],
+  [9,11,13,6]
+];
+
 io.on('connection', function(socket) {
 
   socket.on('n', function(pl) {
@@ -47,7 +55,7 @@ io.on('connection', function(socket) {
   socket.on('ch', function(chest,user) {
     if (!openedchests[chest.id]){
       openedchests[chest.id]=true;
-      io.sockets.to(user).emit('chg',chest);
+      io.sockets.to(user).emit('chg',rarities[chest.v][Math.floor(Math.random() * rarities[chest.v].length)]);
     }
 
   });
@@ -57,9 +65,9 @@ io.on('connection', function(socket) {
   socket.on('atk', function(dmg,to,from) {
       io.sockets.to(to).emit('dmg',dmg,from);
   });
-  socket.on('pt', function(to,from) {
+  socket.on('pt', function(to,from,inv) {
       io.sockets.emit('c','\"'+players[from].name+'\"' + ' was defeated by \"' + players[to].name+'\"');
-      io.sockets.to(to).emit('point');
+      io.sockets.to(to).emit('point',inv);
 
   });
   socket.on('sw', function(from) {
