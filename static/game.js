@@ -599,66 +599,72 @@ else {
     document.addEventListener('keydown', function (event) {
         switch (event.keyCode) {
             case 37:
+            case 65:
                 if (!event.repeat)
                     keys.left = true;
                 break;
             case 38:
+            case 87:
                 if (!event.repeat)
                     keys.up = true;
                 break;
             case 39: // ->
+            case 68:
                 if (!event.repeat)
                     keys.right = true;
                 break;
             case 40: // ->
+            case 83:
                 if (!event.repeat)
                     keys.down = true;
                 break;
             case 90: // X
+            case 16:
                 if (!event.repeat)
                     keys.main = true;
                 break;
             case 88:
+            case 32:
                 if (!event.repeat)
                     keys.off = true;
-                break;
-            case 67:
-                if (!event.repeat)
-                    keys.inv = true;
                 break;
         }
     });
     document.addEventListener('keyup', function (event) {
         switch (event.keyCode) {
             case 37:
+            case 65:
                 if (!event.repeat)
                     keys.left = false;
                 break;
             case 38:
+            case 87:
                 if (!event.repeat)
                     keys.up = false;
                 break;
             case 39: // ->
+            case 68:
                 if (!event.repeat)
                     keys.right = false;
                 break;
             case 40: // ->
+            case 83:
                 if (!event.repeat)
                     keys.down = false;
                 break;
             case 90: // X
+            case 16:
                 if (!event.repeat)
                     keys.main = false;
                 break;
             case 88:
+            case 32:
                 if (!event.repeat)
                     keys.off = false;
                 break;
-            case 67:
-                if (!event.repeat)
-                    keys.inv = false;
-                break;
         }
+        if (event.keyCode == 32)
+            event.preventDefault();
     });
 }
 function createButton(func, style, v, d) {
