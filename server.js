@@ -83,8 +83,8 @@ io.on('connection', function(socket) {
 setInterval(function() {
   openedchests = {};
   io.sockets.emit('chr', players);
-  io.sockets.emit('c', "CHEST RESET");
-}, 10*60*1000);
+  io.sockets.emit('c', "THE CHESTS HAVE BEEN REFILLED");
+}, 4*60*1000);
 
 setInterval(function() {
   io.sockets.emit('s', players);
