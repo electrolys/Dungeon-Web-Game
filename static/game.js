@@ -13,7 +13,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-11811884;
 var socket = io();
 function loadtxt(filePath, mimeType) {
     var xmlhttp = new XMLHttpRequest();
@@ -272,25 +271,25 @@ var gamestate = /** @class */ (function () {
         this.chunks = new array2d(50);
         var js = loadJSON("static/level.json");
         var inc = 0;
-        for (var i = 0; i < 1002; i++)
+        for (var i_1 = 0; i_1 < 1002; i_1++)
             for (var j = 0; j < 1002; j++) {
-                this.level.s(i, j, -1);
+                this.level.s(i_1, j, -1);
             }
-        for (var i = 1; i < 1001; i++) {
+        for (var i_2 = 1; i_2 < 1001; i_2++) {
             for (var j = 1; j < 1001; j++) {
-                this.level.s(i, j, js["tiles"][inc]);
+                this.level.s(i_2, j, js["tiles"][inc]);
                 inc++;
             }
         }
-        for (var i = 0; i < 50; i++)
+        for (var i_3 = 0; i_3 < 50; i_3++)
             for (var j = 0; j < 50; j++) {
-                this.chunks.s(i, j, new vertbuf);
-                this.chunks.g(i, j).vbo = gl.createBuffer();
+                this.chunks.s(i_3, j, new vertbuf);
+                this.chunks.g(i_3, j).vbo = gl.createBuffer();
                 //this.vao=gl.createVertexArray();
                 //gl.bindVertexArray(this.vao);
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.chunks.g(i, j).vbo);
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.chunks.g(i_3, j).vbo);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 0]), gl.STATIC_DRAW);
-                this.chunks.g(i, j).vsize = 0;
+                this.chunks.g(i_3, j).vsize = 0;
             }
         // gl.vertexAttribPointer(0, 2, gl.FLOAT, false, sizeof(1.1)*4, sizeof(1.1)*0);
         // gl.enableVertexAttribArray(0);
@@ -310,117 +309,117 @@ var gamestate = /** @class */ (function () {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.cchestvbo);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0.01, 0.99, 1, 0, 0.99, 0.99, 0, 1, 0.01, 0.01, 1, 1, 0.99, 0.01, 1, 0, 0.99, 0.99, 0, 1, 0.01, 0.01]), gl.STATIC_DRAW);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        for (var i = 0; i < js["hpaths"].length; i++)
-            this.level.s(js["hpaths"][i]["x"] + 1, js["hpaths"][i]["y"], 1);
+        for (var i_4 = 0; i_4 < js["hpaths"].length; i_4++)
+            this.level.s(js["hpaths"][i_4]["x"] + 1, js["hpaths"][i_4]["y"], 1);
         this.chests = [];
-        for (var i = 0; i < js["chests"].length; i++)
-            this.chests.push(new chest(new vec(js["chests"][i]["x"] + 1, js["chests"][i]["y"]), js["chests"][i]["id"]));
+        for (var i_5 = 0; i_5 < js["chests"].length; i_5++)
+            this.chests.push(new chest(new vec(js["chests"][i_5]["x"] + 1, js["chests"][i_5]["y"]), js["chests"][i_5]["id"]));
     }
     gamestate.prototype.update = function () {
         for (var it = 0; it < 50; it++)
             for (var jt = 0; jt < 50; jt++) {
                 var data = [];
-                for (var i = 1 + it * 20; i < 1 + (it + 1) * 20; i++)
+                for (var i_6 = 1 + it * 20; i_6 < 1 + (it + 1) * 20; i_6++)
                     for (var j = 1 + jt * 20; j < 1 + (jt + 1) * 20; j++) {
                         var o = 5;
-                        if (this.level.g(i, j) > 0)
+                        if (this.level.g(i_6, j) > 0)
                             o = 14;
-                        else if (this.level.g(i, j) == 0) {
-                            if (this.level.g(i + 1, j) != 0 && this.level.g(i, j + 1) != 0 && this.level.g(i - 1, j) != 0 && this.level.g(i, j - 1) != 0)
+                        else if (this.level.g(i_6, j) == 0) {
+                            if (this.level.g(i_6 + 1, j) != 0 && this.level.g(i_6, j + 1) != 0 && this.level.g(i_6 - 1, j) != 0 && this.level.g(i_6, j - 1) != 0)
                                 o = 5;
-                            else if (this.level.g(i + 1, j) != 0 && !(this.level.g(i - 1, j) != 0 || ((this.level.g(i, j + 1) != 0) != (this.level.g(i, j - 1) != 0))))
+                            else if (this.level.g(i_6 + 1, j) != 0 && !(this.level.g(i_6 - 1, j) != 0 || ((this.level.g(i_6, j + 1) != 0) != (this.level.g(i_6, j - 1) != 0))))
                                 o = 4;
-                            else if (this.level.g(i - 1, j) != 0 && !(this.level.g(i + 1, j) != 0 || ((this.level.g(i, j + 1) != 0) != (this.level.g(i, j - 1) != 0))))
+                            else if (this.level.g(i_6 - 1, j) != 0 && !(this.level.g(i_6 + 1, j) != 0 || ((this.level.g(i_6, j + 1) != 0) != (this.level.g(i_6, j - 1) != 0))))
                                 o = 3;
-                            else if (this.level.g(i, j + 1) != 0 && !(this.level.g(i, j - 1) != 0 || ((this.level.g(i + 1, j) != 0) != (this.level.g(i - 1, j) != 0))))
+                            else if (this.level.g(i_6, j + 1) != 0 && !(this.level.g(i_6, j - 1) != 0 || ((this.level.g(i_6 + 1, j) != 0) != (this.level.g(i_6 - 1, j) != 0))))
                                 o = 2;
-                            else if (this.level.g(i, j - 1) != 0 && !(this.level.g(i, j + 1) != 0 || ((this.level.g(i + 1, j) != 0) != (this.level.g(i - 1, j) != 0))))
+                            else if (this.level.g(i_6, j - 1) != 0 && !(this.level.g(i_6, j + 1) != 0 || ((this.level.g(i_6 + 1, j) != 0) != (this.level.g(i_6 - 1, j) != 0))))
                                 o = 1;
-                            else if ((this.level.g(i, j - 1) != 0) == (this.level.g(i, j + 1) != 0) && (this.level.g(i - 1, j) != 0) == (this.level.g(i + 1, j) != 0) && (this.level.g(i, j - 1) != 0) != (this.level.g(i - 1, j) != 0))
+                            else if ((this.level.g(i_6, j - 1) != 0) == (this.level.g(i_6, j + 1) != 0) && (this.level.g(i_6 - 1, j) != 0) == (this.level.g(i_6 + 1, j) != 0) && (this.level.g(i_6, j - 1) != 0) != (this.level.g(i_6 - 1, j) != 0))
                                 o = 0;
-                            else if (this.level.g(i + 1, j) != 0 || this.level.g(i - 1, j) != 0 || this.level.g(i, j + 1) != 0 || this.level.g(i, j - 1) != 0) {
-                                if (this.level.g(i + 1, j) != 0 && this.level.g(i, j + 1) != 0 && !(this.level.g(i, j - 1) != 0 || this.level.g(i - 1, j) != 0))
+                            else if (this.level.g(i_6 + 1, j) != 0 || this.level.g(i_6 - 1, j) != 0 || this.level.g(i_6, j + 1) != 0 || this.level.g(i_6, j - 1) != 0) {
+                                if (this.level.g(i_6 + 1, j) != 0 && this.level.g(i_6, j + 1) != 0 && !(this.level.g(i_6, j - 1) != 0 || this.level.g(i_6 - 1, j) != 0))
                                     o = 13;
-                                else if (this.level.g(i - 1, j) != 0 && this.level.g(i, j + 1) != 0 && !(this.level.g(i, j - 1) != 0 || this.level.g(i + 1, j) != 0))
+                                else if (this.level.g(i_6 - 1, j) != 0 && this.level.g(i_6, j + 1) != 0 && !(this.level.g(i_6, j - 1) != 0 || this.level.g(i_6 + 1, j) != 0))
                                     o = 12;
-                                else if (this.level.g(i + 1, j) != 0 && this.level.g(i, j - 1) != 0 && !(this.level.g(i, j + 1) != 0 || this.level.g(i - 1, j) != 0))
+                                else if (this.level.g(i_6 + 1, j) != 0 && this.level.g(i_6, j - 1) != 0 && !(this.level.g(i_6, j + 1) != 0 || this.level.g(i_6 - 1, j) != 0))
                                     o = 11;
-                                else if (this.level.g(i - 1, j) != 0 && this.level.g(i, j - 1) != 0 && !(this.level.g(i, j + 1) != 0 || this.level.g(i + 1, j) != 0))
+                                else if (this.level.g(i_6 - 1, j) != 0 && this.level.g(i_6, j - 1) != 0 && !(this.level.g(i_6, j + 1) != 0 || this.level.g(i_6 + 1, j) != 0))
                                     o = 10;
                                 else
                                     o = 5;
                             }
-                            else if ((((this.level.g(i + 1, j + 1) != 0) ? 1 : 0) + ((this.level.g(i - 1, j + 1) != 0) ? 1 : 0) + ((this.level.g(i + 1, j - 1) != 0) ? 1 : 0) + ((this.level.g(i - 1, j - 1) != 0) ? 1 : 0)) > 1)
+                            else if ((((this.level.g(i_6 + 1, j + 1) != 0) ? 1 : 0) + ((this.level.g(i_6 - 1, j + 1) != 0) ? 1 : 0) + ((this.level.g(i_6 + 1, j - 1) != 0) ? 1 : 0) + ((this.level.g(i_6 - 1, j - 1) != 0) ? 1 : 0)) > 1)
                                 o = 5;
-                            else if (this.level.g(i + 1, j + 1) != 0)
+                            else if (this.level.g(i_6 + 1, j + 1) != 0)
                                 o = 6;
-                            else if (this.level.g(i - 1, j + 1) != 0)
+                            else if (this.level.g(i_6 - 1, j + 1) != 0)
                                 o = 7;
-                            else if (this.level.g(i + 1, j - 1) != 0)
+                            else if (this.level.g(i_6 + 1, j - 1) != 0)
                                 o = 8;
-                            else if (this.level.g(i - 1, j - 1) != 0)
+                            else if (this.level.g(i_6 - 1, j - 1) != 0)
                                 o = 9;
                             else
                                 o = 0;
                         }
-                        else if (this.level.g(i + 1, j) >= 0 && this.level.g(i, j + 1) >= 0 && this.level.g(i - 1, j) >= 0 && this.level.g(i, j - 1) >= 0)
+                        else if (this.level.g(i_6 + 1, j) >= 0 && this.level.g(i_6, j + 1) >= 0 && this.level.g(i_6 - 1, j) >= 0 && this.level.g(i_6, j - 1) >= 0)
                             o = 5;
-                        else if (this.level.g(i + 1, j) >= 0 && !(this.level.g(i - 1, j) >= 0 || ((this.level.g(i, j + 1) >= 0) != (this.level.g(i, j - 1) >= 0))))
+                        else if (this.level.g(i_6 + 1, j) >= 0 && !(this.level.g(i_6 - 1, j) >= 0 || ((this.level.g(i_6, j + 1) >= 0) != (this.level.g(i_6, j - 1) >= 0))))
                             o = 4;
-                        else if (this.level.g(i - 1, j) >= 0 && !(this.level.g(i + 1, j) >= 0 || ((this.level.g(i, j + 1) >= 0) != (this.level.g(i, j - 1) >= 0))))
+                        else if (this.level.g(i_6 - 1, j) >= 0 && !(this.level.g(i_6 + 1, j) >= 0 || ((this.level.g(i_6, j + 1) >= 0) != (this.level.g(i_6, j - 1) >= 0))))
                             o = 3;
-                        else if (this.level.g(i, j + 1) >= 0 && !(this.level.g(i, j - 1) >= 0 || ((this.level.g(i + 1, j) >= 0) != (this.level.g(i - 1, j) >= 0))))
+                        else if (this.level.g(i_6, j + 1) >= 0 && !(this.level.g(i_6, j - 1) >= 0 || ((this.level.g(i_6 + 1, j) >= 0) != (this.level.g(i_6 - 1, j) >= 0))))
                             o = 2;
-                        else if (this.level.g(i, j - 1) >= 0 && !(this.level.g(i, j + 1) >= 0 || ((this.level.g(i + 1, j) >= 0) != (this.level.g(i - 1, j) >= 0))))
+                        else if (this.level.g(i_6, j - 1) >= 0 && !(this.level.g(i_6, j + 1) >= 0 || ((this.level.g(i_6 + 1, j) >= 0) != (this.level.g(i_6 - 1, j) >= 0))))
                             o = 1;
-                        else if ((this.level.g(i, j - 1) >= 0) == (this.level.g(i, j + 1) >= 0) && (this.level.g(i - 1, j) >= 0) == (this.level.g(i + 1, j) >= 0) && (this.level.g(i, j - 1) >= 0) != (this.level.g(i - 1, j) >= 0))
+                        else if ((this.level.g(i_6, j - 1) >= 0) == (this.level.g(i_6, j + 1) >= 0) && (this.level.g(i_6 - 1, j) >= 0) == (this.level.g(i_6 + 1, j) >= 0) && (this.level.g(i_6, j - 1) >= 0) != (this.level.g(i_6 - 1, j) >= 0))
                             o = 0;
-                        else if (this.level.g(i + 1, j) >= 0 || this.level.g(i - 1, j) >= 0 || this.level.g(i, j + 1) >= 0 || this.level.g(i, j - 1) >= 0) {
-                            if (this.level.g(i + 1, j) >= 0 && this.level.g(i, j + 1) >= 0 && !(this.level.g(i, j - 1) >= 0 || this.level.g(i - 1, j) >= 0))
+                        else if (this.level.g(i_6 + 1, j) >= 0 || this.level.g(i_6 - 1, j) >= 0 || this.level.g(i_6, j + 1) >= 0 || this.level.g(i_6, j - 1) >= 0) {
+                            if (this.level.g(i_6 + 1, j) >= 0 && this.level.g(i_6, j + 1) >= 0 && !(this.level.g(i_6, j - 1) >= 0 || this.level.g(i_6 - 1, j) >= 0))
                                 o = 13;
-                            else if (this.level.g(i - 1, j) >= 0 && this.level.g(i, j + 1) >= 0 && !(this.level.g(i, j - 1) >= 0 || this.level.g(i + 1, j) >= 0))
+                            else if (this.level.g(i_6 - 1, j) >= 0 && this.level.g(i_6, j + 1) >= 0 && !(this.level.g(i_6, j - 1) >= 0 || this.level.g(i_6 + 1, j) >= 0))
                                 o = 12;
-                            else if (this.level.g(i + 1, j) >= 0 && this.level.g(i, j - 1) >= 0 && !(this.level.g(i, j + 1) >= 0 || this.level.g(i - 1, j) >= 0))
+                            else if (this.level.g(i_6 + 1, j) >= 0 && this.level.g(i_6, j - 1) >= 0 && !(this.level.g(i_6, j + 1) >= 0 || this.level.g(i_6 - 1, j) >= 0))
                                 o = 11;
-                            else if (this.level.g(i - 1, j) >= 0 && this.level.g(i, j - 1) >= 0 && !(this.level.g(i, j + 1) >= 0 || this.level.g(i + 1, j) >= 0))
+                            else if (this.level.g(i_6 - 1, j) >= 0 && this.level.g(i_6, j - 1) >= 0 && !(this.level.g(i_6, j + 1) >= 0 || this.level.g(i_6 + 1, j) >= 0))
                                 o = 10;
                             else
                                 o = 5;
                         }
-                        else if ((((this.level.g(i + 1, j + 1) >= 0) ? 1 : 0) + ((this.level.g(i - 1, j + 1) >= 0) ? 1 : 0) + ((this.level.g(i + 1, j - 1) >= 0) ? 1 : 0) + ((this.level.g(i - 1, j - 1) >= 0) ? 1 : 0)) > 1)
+                        else if ((((this.level.g(i_6 + 1, j + 1) >= 0) ? 1 : 0) + ((this.level.g(i_6 - 1, j + 1) >= 0) ? 1 : 0) + ((this.level.g(i_6 + 1, j - 1) >= 0) ? 1 : 0) + ((this.level.g(i_6 - 1, j - 1) >= 0) ? 1 : 0)) > 1)
                             o = 5;
-                        else if (this.level.g(i + 1, j + 1) >= 0)
+                        else if (this.level.g(i_6 + 1, j + 1) >= 0)
                             o = 6;
-                        else if (this.level.g(i - 1, j + 1) >= 0)
+                        else if (this.level.g(i_6 - 1, j + 1) >= 0)
                             o = 7;
-                        else if (this.level.g(i + 1, j - 1) >= 0)
+                        else if (this.level.g(i_6 + 1, j - 1) >= 0)
                             o = 8;
-                        else if (this.level.g(i - 1, j - 1) >= 0)
+                        else if (this.level.g(i_6 - 1, j - 1) >= 0)
                             o = 9;
                         else
                             o = 0;
-                        var id = Math.abs(this.level.g(i, j));
-                        data.push(i);
+                        var id = Math.abs(this.level.g(i_6, j));
+                        data.push(i_6);
                         data.push(j);
                         data.push(o + 0.01);
                         data.push(id + 0.01);
-                        data.push(i);
+                        data.push(i_6);
                         data.push(j + 1);
                         data.push(o + 0.01);
                         data.push(id + 0.99);
-                        data.push(i + 1);
+                        data.push(i_6 + 1);
                         data.push(j);
                         data.push(o + 0.99);
                         data.push(id + 0.01);
-                        data.push(i + 1);
+                        data.push(i_6 + 1);
                         data.push(j + 1);
                         data.push(o + 0.99);
                         data.push(id + 0.99);
-                        data.push(i + 1);
+                        data.push(i_6 + 1);
                         data.push(j);
                         data.push(o + 0.99);
                         data.push(id + 0.01);
-                        data.push(i);
+                        data.push(i_6);
                         data.push(j + 1);
                         data.push(o + 0.01);
                         data.push(id + 0.99);
@@ -442,19 +441,19 @@ var gamestate = /** @class */ (function () {
         var sbottom = pl.pos.y + 13;
         var sleft = pl.pos.x - 13 / (canvas.height / canvas.width);
         var sright = pl.pos.x + 13 / (canvas.height / canvas.width);
-        for (var i = 0; i < 50; i++)
+        for (var i_7 = 0; i_7 < 50; i_7++)
             for (var j = 0; j < 50; j++) {
-                if (!(i * 20 > sright ||
-                    (i + 1) * 20 < sleft ||
+                if (!(i_7 * 20 > sright ||
+                    (i_7 + 1) * 20 < sleft ||
                     j * 20 > sbottom ||
                     (j + 1) * 20 < stop)) {
-                    gl.bindBuffer(gl.ARRAY_BUFFER, this.chunks.g(i, j).vbo);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, this.chunks.g(i_7, j).vbo);
                     var t = gl.getUniformLocation(this.shader.prog, 'i');
                     gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
                     gl.enableVertexAttribArray(t);
                     // gl.vertexAttribPointer(t2, 2, gl.FLOAT, false, 8*4, 8*2);
                     // gl.enableVertexAttribArray(t2);
-                    gl.drawArrays(gl.TRIANGLES, 0, this.chunks.g(i, j).vsize);
+                    gl.drawArrays(gl.TRIANGLES, 0, this.chunks.g(i_7, j).vsize);
                 }
             }
         gl.useProgram(this.tshader.prog);
@@ -462,14 +461,14 @@ var gamestate = /** @class */ (function () {
         gl.bindTexture(gl.TEXTURE_2D, this.chesttex);
         gl.uniform2f(gl.getUniformLocation(this.tshader.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
         gl.uniform2i(gl.getUniformLocation(this.tshader.prog, 'spnum'), 2, 1);
-        for (var i = 0; i < this.chests.length; i++) {
-            var x = this.chests[i].pos.x;
-            var y = this.chests[i].pos.y;
+        for (var i_8 = 0; i_8 < this.chests.length; i_8++) {
+            var x = this.chests[i_8].pos.x;
+            var y = this.chests[i_8].pos.y;
             if (!(x > sright ||
                 (x + 1) < sleft ||
                 y > sbottom ||
                 (y + 1) < stop)) {
-                gl.bindBuffer(gl.ARRAY_BUFFER, (this.chests[i].id > 0) ? this.cchestvbo : this.ochestvbo);
+                gl.bindBuffer(gl.ARRAY_BUFFER, (this.chests[i_8].id > 0) ? this.cchestvbo : this.ochestvbo);
                 var t = gl.getUniformLocation(this.tshader.prog, 'i');
                 gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
                 gl.enableVertexAttribArray(t);
@@ -504,24 +503,24 @@ function chat(message) {
 }
 socket.on('c', chat);
 socket.on('chg', function (ch) {
-    for (var i in pl.items) {
-        if (pl.items[i] == 0) {
-            pl.items[i] = ch;
+    for (var i_9 in pl.items) {
+        if (pl.items[i_9] == 0) {
+            pl.items[i_9] = ch;
             break;
         }
     }
 });
 socket.on('g', function (item) {
-    for (var i in pl.items) {
-        if (pl.items[i] == 0) {
-            pl.items[i] = item;
+    for (var i_10 in pl.items) {
+        if (pl.items[i_10] == 0) {
+            pl.items[i_10] = item;
             break;
         }
     }
 });
 socket.on('chr', function (ch) {
-    for (var i in gmst.chests)
-        gmst.chests[i].id = Math.abs(gmst.chests[i].id);
+    for (var i_11 in gmst.chests)
+        gmst.chests[i_11].id = Math.abs(gmst.chests[i_11].id);
 });
 socket.on('dmg', function (dmg, from) {
     if (pl.stun < 0.0) {
@@ -534,11 +533,11 @@ socket.on('dmg', function (dmg, from) {
 });
 socket.on('point', function (inv) {
     pl.points++;
-    for (var i = 0; i < inv.length; i++)
-        if (inv[i] != 0)
+    for (var i_12 = 0; i_12 < inv.length; i_12++)
+        if (inv[i_12] != 0)
             for (var j = 0; j < pl.items.length; j++)
                 if (pl.items[j] == 0) {
-                    pl.items[j] = inv[i];
+                    pl.items[j] = inv[i_12];
                     break;
                 }
 });
@@ -567,17 +566,18 @@ var pkeys = {
 };
 var isMobile = !!(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
 var ongoingTouches = [];
-document.body.addEventListener('click', function (e) {
+canvas.addEventListener('click', function (e) {
+    console.log("hmm");
     var plsizeh = 1 / 2;
     var plsize = canvas.height / 12;
     var x = (e.clientX - canvas.width / 2) / plsize + pl.pos.x;
     var y = (e.clientY - canvas.height / 2) / plsize + pl.pos.y;
-    for (var i in oplayers) {
-        if (x > oplayers[i].pos.x - plsizeh && x < oplayers[i].pos.x + plsizeh && y > oplayers[i].pos.y - plsizeh && y < oplayers[i].pos.y + plsizeh) {
-            if (oplayers[i].team != null)
-                chat(oplayers[i].name + " : " + oplayers[i].team + " (" + oplayers[i].points + ")");
+    for (var i_13 in oplayers) {
+        if (x > oplayers[i_13].pos.x - plsizeh && x < oplayers[i_13].pos.x + plsizeh && y > oplayers[i_13].pos.y - plsizeh && y < oplayers[i_13].pos.y + plsizeh) {
+            if (oplayers[i_13].team != null)
+                chat(oplayers[i_13].name + " : " + oplayers[i_13].team + " (" + oplayers[i_13].points + ")");
             else
-                chat(oplayers[i].name + " (" + oplayers[i].points + ")");
+                chat(oplayers[i_13].name + " (" + oplayers[i_13].points + ")");
         }
     }
 }, false);
@@ -590,10 +590,10 @@ if (isMobile) {
     function handleEnd(e) { ongoingTouches = e.touches; }
     function handleCancel(e) { ongoingTouches = e.touches; }
     function handleMove(e) { ongoingTouches = e.touches; e.preventDefault(); }
-    document.body.addEventListener("touchstart", handleStart, false);
-    document.body.addEventListener("touchend", handleEnd, false);
-    document.body.addEventListener("touchcancel", handleCancel, false);
-    document.body.addEventListener("touchmove", handleMove, false);
+    canvas.addEventListener("touchstart", handleStart, false);
+    canvas.addEventListener("touchend", handleEnd, false);
+    canvas.addEventListener("touchcancel", handleCancel, false);
+    canvas.addEventListener("touchmove", handleMove, false);
 }
 else {
     document.addEventListener('keydown', function (event) {
@@ -693,147 +693,200 @@ var invfocus = -1;
 var itemgraphics = ["static/img/items/nullitem.png", "static/img/items/hookshot.png", "static/img/items/sword0.png", "static/img/items/sword1.png", "static/img/items/sword2.png", "static/img/items/sword3.png", "static/img/items/sword4.png", "static/img/items/armor0.png", "static/img/items/armor1.png", "static/img/items/armor2.png", "static/img/items/boots0.png", "static/img/items/boots1.png", "static/img/items/hat0.png", "static/img/items/hat1.png"];
 var invdisp;
 var trashbutton;
+var hptext = document.getElementById('hp');
+var nametext = document.getElementById('name');
+var pointtext = document.getElementById('points');
+var teamtext = document.getElementById('team');
 if (isMobile) {
     invdisp = [
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 0;
-        else {
-            var t = pl.items[0];
-            pl.items[0] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid green;position: absolute; left: 16px; top: 16px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 1;
-        else {
-            var t = pl.items[1];
-            pl.items[1] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid green;position: absolute; left: 50px; top: 16px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 2;
-        else {
-            var t = pl.items[2];
-            pl.items[2] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid blue;position: absolute; left: 84px; top: 16px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 3;
-        else {
-            var t = pl.items[3];
-            pl.items[3] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid blue;position: absolute; left: 118px; top: 16px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 4;
-        else {
-            var t = pl.items[4];
-            pl.items[4] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid black;position: absolute; left: 16px; top: 50px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 5;
-        else {
-            var t = pl.items[5];
-            pl.items[5] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid black;position: absolute; left: 50px; top: 50px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 6;
-        else {
-            var t = pl.items[6];
-            pl.items[6] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid black;position: absolute; left: 84px; top: 50px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 7;
-        else {
-            var t = pl.items[7];
-            pl.items[7] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid black;position: absolute; left: 118px; top: 50px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 8;
-        else {
-            var t = pl.items[8];
-            pl.items[8] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid black;position: absolute; left: 16px; top: 84px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 9;
-        else {
-            var t = pl.items[9];
-            pl.items[9] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid black;position: absolute; left: 50px; top: 84px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 10;
-        else {
-            var t = pl.items[10];
-            pl.items[10] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid black;position: absolute; left: 84px; top: 84px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 11;
-        else {
-            var t = pl.items[11];
-            pl.items[11] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid black;position: absolute; left: 118px; top: 84px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 12;
-        else {
-            var t = pl.items[12];
-            pl.items[12] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid black;position: absolute; left: 16px; top: 118px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 13;
-        else {
-            var t = pl.items[13];
-            pl.items[13] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid black;position: absolute; left: 50px; top: 118px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 14;
-        else {
-            var t = pl.items[14];
-            pl.items[14] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid black;position: absolute; left: 84px; top: 118px;width:32px; height:32px;"),
-        createButtoni(function () { if (invfocus == -1)
-            invfocus = 15;
-        else {
-            var t = pl.items[15];
-            pl.items[15] = pl.items[invfocus];
-            pl.items[invfocus] = t;
-            invfocus = -1;
-        } }, "outline:2px solid black;position: absolute; left: 118px; top: 118px;width:32px; height:32px;")
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 0;
+            else {
+                var t = pl.items[0];
+                pl.items[0] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid green;position: absolute; left: 16px; top: 16px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 1;
+            else {
+                var t = pl.items[1];
+                pl.items[1] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid green;position: absolute; left: 50px; top: 16px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 2;
+            else {
+                var t = pl.items[2];
+                pl.items[2] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid blue;position: absolute; left: 84px; top: 16px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 3;
+            else {
+                var t = pl.items[3];
+                pl.items[3] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid blue;position: absolute; left: 118px; top: 16px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 4;
+            else {
+                var t = pl.items[4];
+                pl.items[4] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid black;position: absolute; left: 152px; top: 16px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 5;
+            else {
+                var t = pl.items[5];
+                pl.items[5] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid black;position: absolute; left: 186px; top: 16px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 6;
+            else {
+                var t = pl.items[6];
+                pl.items[6] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid black;position: absolute; left: 220px; top: 16px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 7;
+            else {
+                var t = pl.items[7];
+                pl.items[7] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid black;position: absolute; left: 254px; top: 16px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 8;
+            else {
+                var t = pl.items[8];
+                pl.items[8] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid black;position: absolute; left: 16px; top: 50px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 9;
+            else {
+                var t = pl.items[9];
+                pl.items[9] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid black;position: absolute; left: 50px; top: 50px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 10;
+            else {
+                var t = pl.items[10];
+                pl.items[10] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid black;position: absolute; left: 84px; top: 50px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 11;
+            else {
+                var t = pl.items[11];
+                pl.items[11] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid black;position: absolute; left: 118px; top: 50px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 12;
+            else {
+                var t = pl.items[12];
+                pl.items[12] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid black;position: absolute; left: 152px; top: 50px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 13;
+            else {
+                var t = pl.items[13];
+                pl.items[13] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid black;position: absolute; left: 186px; top: 50px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 14;
+            else {
+                var t = pl.items[14];
+                pl.items[14] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid black;position: absolute; left: 220px; top: 50px;width:32px; height:32px;"),
+        createButtoni(function () {
+            if (invfocus == -1)
+                invfocus = 15;
+            else {
+                var t = pl.items[15];
+                pl.items[15] = pl.items[invfocus];
+                pl.items[invfocus] = t;
+                invfocus = -1;
+            }
+        }, "outline:2px solid black;position: absolute; left: 254px; top: 50px;width:32px; height:32px;")
     ];
-    trashbutton = createButtoni(function () { if (invfocus != -1) {
-        pl.items[invfocus] = 0;
-        invfocus = -1;
-    } }, "position: absolute; left: 152px; top: 16px;width:32px; height:32px;");
-    document.getElementById('teammembers').style.cssText = "width: 50px; height: 100px; line-height: 1em; overflow:scroll; border: thin #000 solid; padding: 5px;position:absolute;left:152px;top:40px";
+    trashbutton = createButtoni(function () {
+        if (invfocus != -1) {
+            pl.items[invfocus] = 0;
+            invfocus = -1;
+        }
+    }, "position: absolute; left: 352px; top: 16px;width:32px; height:32px;");
+    document.getElementById('teammembers').style.cssText = "width: 50px; height: 100px; line-height: 1em; overflow:scroll; border: thin #000 solid; padding: 5px;position:absolute;left:288px;top:16px";
     for (var i = 0; i < chatelements.length; i++) {
         chatelements[i].style.fontSize = "7px";
+        chatelements[i].style.right = "8px";
+        chatelements[i].style.left = null;
+        chatelements[i].style.bottom = (i * 8 + 36).toString() + "px";
     }
-    for (var i = 0; i < boardelements.length; i++)
+    for (var i = 0; i < boardelements.length; i++) {
         boardelements[i].style.fontSize = "7px";
+        boardelements[i].style.top = (i * 8 + 36).toString() + "px";
+    }
+    hptext.style.fontSize = "9px";
+    nametext.style.fontSize = "9px";
+    pointtext.style.fontSize = "9px";
+    teamtext.style.fontSize = "9px";
+    hptext.style.bottom = "0px";
+    nametext.style.bottom = "9px";
+    pointtext.style.bottom = "18px";
+    teamtext.style.bottom = "27px";
+    document.getElementById('chatbox').style.cssText = "position: absolute; z-index: 1; right: 66px; bottom: 100px; font-size:14px;height:14px;width:50px;";
+    document.getElementById('chatconfirm').style.cssText = "position: absolute; z-index: 1; right: 8px;font-size:14px; bottom: 100px; width:50px; height:20px;";
 }
 else {
     invdisp = [
@@ -983,10 +1036,6 @@ function dally(id) {
 //var givebutton:any = createButton(function(){pl.maini=3},"position: absolute; left: 128px; top: 112px;","give");
 var spsize = 64;
 var lastUpdateTime = performance.now();
-var hptext = document.getElementById('hp');
-var nametext = document.getElementById('name');
-var pointtext = document.getElementById('points');
-var teamtext = document.getElementById('team');
 var plvbo = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-0.5, -0.5, 0.01, 0.01, 0.5, -0.5, 0.99, 0.01, -0.5, 0.5, 0.01, 0.99, 0.5, 0.5, 0.99, 0.99, 0.5, -0.5, 0.99, 0.01, -0.5, 0.5, 0.01, 0.99]), gl.STATIC_DRAW);
@@ -1000,20 +1049,23 @@ function trect(at, ab, al, ar, bt, bb, bl, br) {
 }
 function sword(dmg) {
     var v = pl.pos.add(directions[pl.dir].smul(1.5));
-    for (var i in oplayers) {
-        if (i != socket.id && trect(v.y + 2, v.y - 2, v.x - 2, v.x + 2, oplayers[i]["pos"]["y"] + 0.5, oplayers[i]["pos"]["y"] - 0.5, oplayers[i]["pos"]["x"] - 0.5, oplayers[i]["pos"]["x"] + 0.5)) {
-            if (oplayers[i].team == null || oplayers[i].team != pl.team)
-                socket.emit('atk', dmg, i, socket.id);
+    for (var i_14 in oplayers) {
+        if (i_14 != socket.id && trect(v.y + 2, v.y - 2, v.x - 2, v.x + 2, oplayers[i_14]["pos"]["y"] + 0.5, oplayers[i_14]["pos"]["y"] - 0.5, oplayers[i_14]["pos"]["x"] - 0.5, oplayers[i_14]["pos"]["x"] + 0.5)) {
+            if (oplayers[i_14].team == null || oplayers[i_14].team != pl.team)
+                socket.emit('atk', dmg, i_14, socket.id);
         }
     }
     socket.emit('sw', socket.id);
     pl.swanim = 0.12;
 }
 var swipetex = loadTexture('static/img/swipe.png');
+var touchtex = loadTexture('static/img/touch.png');
+var buttontex = loadTexture('static/img/button.png');
 var pltextures = [loadTexture('static/img/pl/player0.png'), loadTexture('static/img/pl/armoredegg.png')];
 var stuneffect = 0;
 var regtime = 0;
 var dt;
+var passivemode = 0; //0 - speed , 1 - protection , 2 - healing "for mobile only"
 function updatefunc() {
     var currentTime = performance.now();
     dt = (currentTime - lastUpdateTime) / 1000.0;
@@ -1142,26 +1194,26 @@ function updatefunc() {
     }
     if (pl.hp <= 0)
         pl = new player(pl.name, Math.max(pl.points - 5, 0), pl.team);
-    for (var i = 0; i < invdisp.length; i++) {
-        if (i == invfocus) {
-            invdisp[i].style.zIndex = 102;
-            invdisp[i].style.outlineColor = 'red';
+    for (var i_15 = 0; i_15 < invdisp.length; i_15++) {
+        if (i_15 == invfocus) {
+            invdisp[i_15].style.zIndex = 102;
+            invdisp[i_15].style.outlineColor = 'red';
         }
         else {
-            if (i < 2) {
-                invdisp[i].style.zIndex = 101;
-                invdisp[i].style.outlineColor = 'green';
+            if (i_15 < 2) {
+                invdisp[i_15].style.zIndex = 101;
+                invdisp[i_15].style.outlineColor = 'green';
             }
-            else if (i < 4) {
-                invdisp[i].style.zIndex = 101;
-                invdisp[i].style.outlineColor = 'blue';
+            else if (i_15 < 4) {
+                invdisp[i_15].style.zIndex = 101;
+                invdisp[i_15].style.outlineColor = 'blue';
             }
             else {
-                invdisp[i].style.zIndex = 100;
-                invdisp[i].style.outlineColor = 'black';
+                invdisp[i_15].style.zIndex = 100;
+                invdisp[i_15].style.outlineColor = 'black';
             }
         }
-        invdisp[i].src = itemgraphics[pl.items[i]];
+        invdisp[i_15].src = itemgraphics[pl.items[i_15]];
     }
     hptext.innerHTML = "HP : " + Math.floor(pl.hp).toString() + " / 100";
     nametext.innerHTML = "Name : " + pl.name;
@@ -1172,53 +1224,58 @@ function updatefunc() {
         teamtext.innerHTML = "Team : " + pl.team;
     if (cnewtime > 0) {
         cnewtime -= dt;
-        chatelements[0].style.fontSize = (14 + cnewtime * 4).toString() + 'px';
+        if (isMobile)
+            chatelements[0].style.fontSize = (7 + cnewtime * 3).toString() + 'px';
+        else
+            chatelements[0].style.fontSize = (14 + cnewtime * 4).toString() + 'px';
     }
+    else if (isMobile)
+        chatelements[0].style.fontSize = '7px';
     else
         chatelements[0].style.fontSize = '14px';
     {
         var t = [];
-        for (var i in oplayers) {
-            if (oplayers[i].team == null) {
-                t.push(oplayers[i]);
+        for (var i_16 in oplayers) {
+            if (oplayers[i_16].team == null) {
+                t.push(oplayers[i_16]);
             }
             else {
                 var b_1 = true;
                 for (var j = 0; j < t.length; j++)
-                    if (t[j].team == oplayers[i].team) {
-                        t[j].points += oplayers[i].points;
+                    if (t[j].team == oplayers[i_16].team) {
+                        t[j].points += oplayers[i_16].points;
                         b_1 = false;
                         break;
                     }
                 if (b_1)
-                    t.push({ 'name': '[' + oplayers[i].team + ']', 'team': oplayers[i].team, 'points': oplayers[i].points });
+                    t.push({ 'name': '[' + oplayers[i_16].team + ']', 'team': oplayers[i_16].team, 'points': oplayers[i_16].points });
             }
         }
         t.sort(function (a, b) { return a.points - b.points; });
-        for (var i = 0; i < 5; i++) {
+        for (var i_17 = 0; i_17 < 5; i_17++) {
             var s = void 0;
-            if (i < t.length) {
-                s = t[i].name;
-                s += ": " + t[i].points.toString();
+            if (i_17 < t.length) {
+                s = t[i_17].name;
+                s += ": " + t[i_17].points.toString();
             }
             else {
                 s = "";
             }
-            boardelements[i].innerHTML = s;
+            boardelements[i_17].innerHTML = s;
         }
-        for (var i in oplayers) {
-            if (allyelements[i]) {
-                if (oplayers[i].team == null || oplayers[i].team != pl.team || i == socket.id)
-                    dally(i);
+        for (var i_18 in oplayers) {
+            if (allyelements[i_18]) {
+                if (oplayers[i_18].team == null || oplayers[i_18].team != pl.team || i_18 == socket.id)
+                    dally(i_18);
                 else
-                    allyelements[i].value = oplayers[i].name + "\n(" + oplayers[i].points + ")" + " HP: " + oplayers[i].hp + "/100";
+                    allyelements[i_18].value = oplayers[i_18].name + "\n(" + oplayers[i_18].points + ")" + " HP: " + oplayers[i_18].hp + "/100";
             }
-            else if (oplayers[i].team != null && oplayers[i].team == pl.team && i != socket.id)
-                cally(i);
+            else if (oplayers[i_18].team != null && oplayers[i_18].team == pl.team && i_18 != socket.id)
+                cally(i_18);
         }
-        for (var i in allyelements) {
-            if (!oplayers[i]) {
-                dally(i);
+        for (var i_19 in allyelements) {
+            if (!oplayers[i_19]) {
+                dally(i_19);
             }
         }
     }
@@ -1232,74 +1289,81 @@ function updatefunc() {
     if (pl.hlen < 0.1) {
         if (pl.swanim < 0.0 && pl.stun < 1.2) {
             if (isMobile) {
-                for (var i = 0; i < ongoingTouches.length; i += 1) {
-                    if (ongoingTouches[i].pageX < canvas.width / 2) {
-                        v = v.add(new vec(ongoingTouches[i].pageX - canvas.width / 4, -(ongoingTouches[i].pageY - (canvas.height * 3 / 4))));
+                keys.main = false;
+                keys.off = false;
+                for (var i_20 = 0; i_20 < ongoingTouches.length; i_20 += 1) {
+                    if (ongoingTouches[i_20].pageX < canvas.width / 2) {
+                        var tt = (new vec(ongoingTouches[i_20].pageX - canvas.width / 4, -(ongoingTouches[i_20].pageY - (canvas.height * 4 / 6)))).norm();
+                        v = v.add(new vec(Math.round(tt.x), Math.round(tt.y)));
+                    }
+                    else if (ongoingTouches[i_20].pageX < canvas.width * 3 / 4) {
+                        keys.main = true;
+                    }
+                    else {
+                        keys.off = true;
                     }
                 }
             }
-            else {
-                if (keys.up)
-                    v.y++;
-                if (keys.down)
-                    v.y--;
-                if (keys.left)
-                    v.x--;
-                if (keys.right)
-                    v.x++;
-                if (keys.main && !pkeys.main) {
-                    switch (pl.items[0]) {
-                        case 1:
-                            pl.hlen = 0.5;
-                            break;
-                        case 2:
-                            if (pl.swanim < -0.1)
-                                sword(5);
-                            break;
-                        case 3:
-                            if (pl.swanim < -0.1)
-                                sword(10);
-                            break;
-                        case 4:
-                            if (pl.swanim < -0.1)
-                                sword(20);
-                            break;
-                        case 5:
-                            if (pl.swanim < -0.1)
-                                sword(35);
-                            break;
-                        case 6:
-                            if (pl.swanim < -0.1)
-                                sword(50);
-                            break;
-                    }
+            if (keys.up)
+                v.y++;
+            if (keys.down)
+                v.y--;
+            if (keys.left)
+                v.x--;
+            if (keys.right)
+                v.x++;
+            if (keys.main && !pkeys.main) {
+                switch (pl.items[0]) {
+                    case 1:
+                        pl.hlen = 0.5;
+                        break;
+                    case 2:
+                        if (pl.swanim < -0.1)
+                            sword(5);
+                        break;
+                    case 3:
+                        if (pl.swanim < -0.1)
+                            sword(10);
+                        break;
+                    case 4:
+                        if (pl.swanim < -0.1)
+                            sword(20);
+                        break;
+                    case 5:
+                        if (pl.swanim < -0.1)
+                            sword(35);
+                        break;
+                    case 6:
+                        if (pl.swanim < -0.1)
+                            sword(50);
+                        break;
                 }
-                if (keys.off && !pkeys.off) {
-                    switch (pl.items[1]) {
-                        case 1:
-                            pl.hlen = 0.5;
-                            break;
-                        case 2:
-                            if (pl.swanim < -0.1)
-                                sword(5);
-                            break;
-                        case 3:
-                            if (pl.swanim < -0.1)
-                                sword(10);
-                            break;
-                        case 4:
-                            if (pl.swanim < -0.1)
-                                sword(20);
-                            break;
-                        case 5:
-                            if (pl.swanim < -0.1)
-                                sword(35);
-                            break;
-                        case 6:
-                            if (pl.swanim < -0.1)
-                                sword(50);
-                            break;
-                    }
+            }
+            if (keys.off && !pkeys.off) {
+                switch (pl.items[1]) {
+                    case 1:
+                        pl.hlen = 0.5;
+                        break;
+                    case 2:
+                        if (pl.swanim < -0.1)
+                            sword(5);
+                        break;
+                    case 3:
+                        if (pl.swanim < -0.1)
+                            sword(10);
+                        break;
+                    case 4:
+                        if (pl.swanim < -0.1)
+                            sword(20);
+                        break;
+                    case 5:
+                        if (pl.swanim < -0.1)
+                            sword(35);
+                        break;
+                    case 6:
+                        if (pl.swanim < -0.1)
+                            sword(50);
+                        break;
                 }
             }
             if (v.lensq() > 0.1) {
@@ -1313,12 +1377,94 @@ function updatefunc() {
                 if (v.dot(directions[1]) > v.dot(directions[0]) - 0.01 && v.dot(directions[1]) > v.dot(directions[2]) - 0.01 && v.dot(directions[1]) > v.dot(directions[3]) - 0.01)
                     pl.dir = 1;
                 if (isMobile) {
-                    var t = (new vec(canvas.width / 4, canvas.height * 3 / 4)).add(v.smul(15));
-                    document.getElementById('joystick').style.display = 'block';
-                    document.getElementById('joystick').style.left = Math.floor(t.x).toString() + 'px';
-                    document.getElementById('joystick').style.top = Math.floor(t.y).toString() + 'px';
+                    var vt = (new vec(-1 / 2, -1 / 3)).add(v.mul(new vec(0.2 * (canvas.height / canvas.width), 0.2)));
+                    gl.useProgram(dynshad.prog);
+                    gl.activeTexture(gl.TEXTURE0);
+                    gl.bindTexture(gl.TEXTURE_2D, touchtex);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
+                    var t = gl.getUniformLocation(dynshad.prog, 'i');
+                    gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
+                    gl.enableVertexAttribArray(t);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), vt.x, vt.y);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), 1, 1);
+                    gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 1, 1);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 0.1 * (canvas.height / canvas.width), -0.1);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, 0);
+                    gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), 0);
+                    gl.drawArrays(gl.TRIANGLES, 0, 6);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+                    vt = (new vec(-1 / 2, -1 / 3));
+                    gl.useProgram(dynshad.prog);
+                    gl.activeTexture(gl.TEXTURE0);
+                    gl.bindTexture(gl.TEXTURE_2D, touchtex);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
+                    t = gl.getUniformLocation(dynshad.prog, 'i');
+                    gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
+                    gl.enableVertexAttribArray(t);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), vt.x, vt.y);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), 1, 1);
+                    gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 1, 1);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 0.07 * (canvas.height / canvas.width), -0.07);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, 0);
+                    gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), 0);
+                    gl.drawArrays(gl.TRIANGLES, 0, 6);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, null);
                 }
                 v = v.smul(dt * 8 * pl.checkspd());
+            }
+            else if (isMobile) {
+                var vt = (new vec(-1 / 2, -1 / 3));
+                gl.useProgram(dynshad.prog);
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, touchtex);
+                gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
+                var t = gl.getUniformLocation(dynshad.prog, 'i');
+                gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(t);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), vt.x, vt.y);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), 1, 1);
+                gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 1, 1);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 0.1 * (canvas.height / canvas.width), -0.1);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, 0);
+                gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), 0);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+                gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            }
+            if (isMobile) {
+                var vt = (new vec(5 / 8, -1 / 2));
+                gl.useProgram(dynshad.prog);
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, buttontex);
+                gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
+                var t = gl.getUniformLocation(dynshad.prog, 'i');
+                gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(t);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), vt.x, vt.y);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), 1, 1);
+                gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 1, 1);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 0.3 * (canvas.height / canvas.width), -0.3);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, 0);
+                gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), 0);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+                gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            }
+            if (isMobile) {
+                var vt = (new vec(3 / 8, -1 / 2));
+                gl.useProgram(dynshad.prog);
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, buttontex);
+                gl.bindBuffer(gl.ARRAY_BUFFER, plvbo);
+                var t = gl.getUniformLocation(dynshad.prog, 'i');
+                gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(t);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), vt.x, vt.y);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), 1, 1);
+                gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 1, 1);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 0.3 * (canvas.height / canvas.width), -0.3);
+                gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, 0);
+                gl.uniform1f(gl.getUniformLocation(dynshad.prog, 'angle'), 0);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+                gl.bindBuffer(gl.ARRAY_BUFFER, null);
             }
         }
     }
@@ -1331,7 +1477,7 @@ function updatefunc() {
         }
         else {
             var steps_1 = Math.ceil(dt * 40 + 0.1);
-            for (var i = 0; i < steps_1; i++) {
+            for (var i_21 = 0; i_21 < steps_1; i_21++) {
                 pl.hlen += 30 * (dt / steps_1);
                 p = pl.pos.add(directions[pl.dir].smul(pl.hlen));
                 if (gmst.level.g(Math.floor(p.x), Math.floor(p.y)) < 0) {
@@ -1345,7 +1491,7 @@ function updatefunc() {
     var steps = Math.ceil(v.len() * 2.0 + 0.1);
     var va = v.sdiv(steps);
     var b = false;
-    for (var i = 0; i < steps; i++) {
+    for (var i_22 = 0; i_22 < steps; i_22++) {
         pl.pos = pl.pos.add(va);
         if (gmst.level.g(Math.floor(pl.pos.x - 0.495), Math.floor(pl.pos.y)) < 0) {
             pl.pos.x = Math.floor(pl.pos.x) + 0.505;
@@ -1401,8 +1547,8 @@ function updatefunc() {
             }
         {
             var t = false;
-            for (var i_1 in pl.items)
-                if (pl.items[i_1] == 0)
+            for (var i_23 in pl.items)
+                if (pl.items[i_23] == 0)
                     t = true;
             if (t)
                 for (var c in gmst.chests) {
