@@ -129,6 +129,7 @@ var player = /** @class */ (function () {
         if (points === void 0) { points = 0; }
         if (team === void 0) { team = null; }
         this.pos = new vec(10, 980);
+        this.cam = new vec(10, 980);
         this.hp = 100;
         // this.items=[1,0,0,13,
         //             12,11,10,9,
@@ -140,6 +141,7 @@ var player = /** @class */ (function () {
             0, 0, 0, 0];
         this.dir = 0;
         this.hlen = 0;
+        this.hlens = 0;
         this.name = name;
         this.maini = 0;
         this.offi = 1;
@@ -217,7 +219,7 @@ var player = /** @class */ (function () {
     };
     return player;
 }());
-var pl = new player(prompt("Enter a name", ""));
+var pl = new player(prompt("Controls:\nWASD/Arrows - Move\nShift/Z - use left green slot item\nSpace/X - use right green slot item\nBlue slots are for passive items\n(armor,shoes,hats)\n\nEnter a name:", ""));
 if (pl.name == "") {
     switch (Math.floor(Math.random() * 3)) {
         case 0:
@@ -434,13 +436,13 @@ var gamestate = /** @class */ (function () {
         gl.useProgram(this.shader.prog);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.tex);
-        gl.uniform2f(gl.getUniformLocation(this.shader.prog, 'off'), -pl.pos.x, -pl.pos.y);
-        gl.uniform2f(gl.getUniformLocation(this.shader.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
+        gl.uniform2f(gl.getUniformLocation(this.shader.prog, 'off'), -pl.cam.x, -pl.cam.y);
+        gl.uniform2f(gl.getUniformLocation(this.shader.prog, 'scl'), (1 / 8) * (canvas.height / canvas.width), 1 / 8);
         gl.uniform2i(gl.getUniformLocation(this.shader.prog, 'spnum'), 15, 3);
-        var stop = pl.pos.y - 13;
-        var sbottom = pl.pos.y + 13;
-        var sleft = pl.pos.x - 13 / (canvas.height / canvas.width);
-        var sright = pl.pos.x + 13 / (canvas.height / canvas.width);
+        var stop = pl.cam.y - 13;
+        var sbottom = pl.cam.y + 13;
+        var sleft = pl.cam.x - 13 / (canvas.height / canvas.width);
+        var sright = pl.cam.x + 13 / (canvas.height / canvas.width);
         for (var i_7 = 0; i_7 < 50; i_7++)
             for (var j = 0; j < 50; j++) {
                 if (!(i_7 * 20 > sright ||
@@ -459,7 +461,7 @@ var gamestate = /** @class */ (function () {
         gl.useProgram(this.tshader.prog);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.chesttex);
-        gl.uniform2f(gl.getUniformLocation(this.tshader.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
+        gl.uniform2f(gl.getUniformLocation(this.tshader.prog, 'scl'), (1 / 8) * (canvas.height / canvas.width), 1 / 8);
         gl.uniform2i(gl.getUniformLocation(this.tshader.prog, 'spnum'), 2, 1);
         for (var i_8 = 0; i_8 < this.chests.length; i_8++) {
             var x = this.chests[i_8].pos.x;
@@ -472,7 +474,7 @@ var gamestate = /** @class */ (function () {
                 var t = gl.getUniformLocation(this.tshader.prog, 'i');
                 gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
                 gl.enableVertexAttribArray(t);
-                gl.uniform2f(gl.getUniformLocation(this.tshader.prog, 'off'), x - pl.pos.x, y - pl.pos.y);
+                gl.uniform2f(gl.getUniformLocation(this.tshader.prog, 'off'), x - pl.cam.x, y - pl.cam.y);
                 gl.drawArrays(gl.TRIANGLES, 0, 6);
             }
         }
@@ -569,15 +571,17 @@ var ongoingTouches = [];
 canvas.addEventListener('click', function (e) {
     console.log("hmm");
     var plsizeh = 1 / 2;
-    var plsize = canvas.height / 12;
+    var plsize = canvas.height / 16;
     var x = (e.clientX - canvas.width / 2) / plsize + pl.pos.x;
     var y = (e.clientY - canvas.height / 2) / plsize + pl.pos.y;
     for (var i_13 in oplayers) {
         if (x > oplayers[i_13].pos.x - plsizeh && x < oplayers[i_13].pos.x + plsizeh && y > oplayers[i_13].pos.y - plsizeh && y < oplayers[i_13].pos.y + plsizeh) {
-            if (oplayers[i_13].team != null)
+            if (oplayers[i_13].team != null) {
                 chat(oplayers[i_13].name + " : " + oplayers[i_13].team + " (" + oplayers[i_13].points + ")");
-            else
+            }
+            else {
                 chat(oplayers[i_13].name + " (" + oplayers[i_13].points + ")");
+            }
         }
     }
 }, false);
@@ -1091,6 +1095,11 @@ function updatefunc() {
         }
         gl.clearColor(0.23137, 0.23137, 0.23137, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
+        {
+            var t = pl.pos.add(directions[pl.dir].smul(pl.hlen));
+            var f = 1 - Math.pow(0.01, dt);
+            pl.cam = new vec(pl.cam.x + (t.x - pl.cam.x) * f, pl.cam.y + (t.y - pl.cam.y) * f);
+        }
         gmst.render();
         gl.useProgram(dynshad.prog);
         if ((Math.round(stuneffect * 5)) % 2 == 0 || !(pl.stun > 0)) {
@@ -1100,8 +1109,8 @@ function updatefunc() {
             var t = gl.getUniformLocation(dynshad.prog, 'i');
             gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(t);
-            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), 0, 0);
-            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), pl.pos.x - pl.cam.x, pl.pos.y - pl.cam.y);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 8) * (canvas.height / canvas.width), 1 / 8);
             gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 1, 2);
             gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 1, -1);
             gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, ((Math.round(pl.pos.x) + Math.round(pl.pos.y)) % 2) ? 0 : 1);
@@ -1120,8 +1129,8 @@ function updatefunc() {
                     var t = gl.getUniformLocation(dynshad.prog, 'i');
                     gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
                     gl.enableVertexAttribArray(t);
-                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), oplayers[id].pos.x - pl.pos.x, oplayers[id].pos.y - pl.pos.y);
-                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), oplayers[id].pos.x - pl.cam.x, oplayers[id].pos.y - pl.cam.y);
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 8) * (canvas.height / canvas.width), 1 / 8);
                     gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 1, 2);
                     gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 1, -1);
                     gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, ((Math.round(oplayers[id].pos.x) + Math.round(oplayers[id].pos.y)) % 2) ? 1 : 0);
@@ -1139,9 +1148,9 @@ function updatefunc() {
                     gl.enableVertexAttribArray(t);
                     {
                         var v_1 = directions[oplayers[id].dir].smul(1.5);
-                        gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), oplayers[id].pos.x - pl.pos.x + v_1.x, oplayers[id].pos.y - pl.pos.y + v_1.y);
+                        gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), oplayers[id].pos.x - pl.cam.x + v_1.x, oplayers[id].pos.y - pl.cam.y + v_1.y);
                     }
-                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), (1 / 12));
+                    gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 8) * (canvas.height / canvas.width), (1 / 8));
                     gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 1, 1);
                     gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 4, -4);
                     gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, 0);
@@ -1162,10 +1171,10 @@ function updatefunc() {
             gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(t);
             {
-                var v_2 = directions[pl.dir].smul(1.5);
+                var v_2 = directions[pl.dir].smul(1.5).add(pl.pos).sub(pl.cam);
                 gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), v_2.x, v_2.y);
             }
-            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), (1 / 12));
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 8) * (canvas.height / canvas.width), (1 / 8));
             gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 1, 1);
             gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 4, -4);
             gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, 0);
@@ -1181,8 +1190,9 @@ function updatefunc() {
             var t = gl.getUniformLocation(dynshad.prog, 'i');
             gl.vertexAttribPointer(t, 4, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(t);
-            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), pl.hlen * directions[pl.dir].x, pl.hlen * directions[pl.dir].y);
-            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 12) * (canvas.height / canvas.width), 1 / 12);
+            var v_3 = pl.pos.add(directions[pl.dir].smul(pl.hlen)).sub(pl.cam);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'off'), v_3.x, v_3.y);
+            gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'scl'), (1 / 8) * (canvas.height / canvas.width), 1 / 8);
             gl.uniform2i(gl.getUniformLocation(dynshad.prog, 'spnum'), 2, 1);
             gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'lscl'), 0.3, 0.3);
             gl.uniform2f(gl.getUniformLocation(dynshad.prog, 'uvoff'), 0, 0);
@@ -1478,14 +1488,14 @@ function updatefunc() {
         else {
             var steps_1 = Math.ceil(dt * 40 + 0.1);
             for (var i_21 = 0; i_21 < steps_1; i_21++) {
-                pl.hlen += 30 * (dt / steps_1);
+                pl.hlen += 18 * (dt / steps_1);
                 p = pl.pos.add(directions[pl.dir].smul(pl.hlen));
                 if (gmst.level.g(Math.floor(p.x), Math.floor(p.y)) < 0) {
                     break;
                 }
             }
         }
-        if (pl.hlen > 10)
+        if (pl.hlen > 15)
             pl.hlen = 0;
     }
     var steps = Math.ceil(v.len() * 2.0 + 0.1);
@@ -1542,8 +1552,10 @@ function updatefunc() {
         }
         if (pl.hlen < 0.1)
             if (gmst.level.g(Math.floor(pl.pos.x), Math.floor(pl.pos.y)) == 0) {
-                pl.hp = -1;
-                socket.emit('chat', "< " + pl.name + " > fell in the void");
+                pl.hp -= 15;
+                pl.pos = new vec(10, 980);
+                if (pl.hp <= 0)
+                    socket.emit('chat', "< " + pl.name + " > succumbed in the void");
             }
         {
             var t = false;
